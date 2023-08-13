@@ -8,12 +8,14 @@ const config: RollupOptions = {
     {
       name: 'bundle',
       format: 'cjs',
-      dir: 'dist/cjs'
+      dir: 'dist/cjs',
+      sourcemap: true
     },
     {
       name: 'bundle',
       format: 'es',
-      dir: 'dist/es'
+      dir: 'dist/es',
+      sourcemap: true
     }
   ],
 
