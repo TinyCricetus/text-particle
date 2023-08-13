@@ -2,19 +2,17 @@ import typescript from 'rollup-plugin-typescript2'
 import { RollupOptions } from 'rollup'
 
 const config: RollupOptions = {
-  input: './src/index.ts',
+  input: './index.ts',
 
   output: [
     {
-      name: 'bundle',
       format: 'cjs',
-      dir: 'dist/cjs',
+      file: 'dist/main.js',
       sourcemap: true
     },
     {
-      name: 'bundle',
       format: 'es',
-      dir: 'dist/es',
+      file: 'dist/index.js',
       sourcemap: true
     }
   ],
@@ -22,7 +20,7 @@ const config: RollupOptions = {
   plugins: [
     typescript({
       tsconfig: './tsconfig.json',
-      exclude: 'rollup.config.ts'
+      exclude: ['rollup.config.ts', 'node_modules']
     })
   ]
 }

@@ -1,9 +1,10 @@
 {
   "name": "text-particle",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Particle effects for text.",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/es/index.js",
+  "main": "./dist/main.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin rollup-plugin-typescript2",
     "publish:lib": "npm run build && npm publish"
