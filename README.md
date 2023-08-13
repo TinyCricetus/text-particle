@@ -4,9 +4,9 @@ Create particle effects for text.
 
 ## Preview
 
-![preview_1](./images/image_1.png)
+![preview_1](https://github.com/TinyCricetus/text-particle/blob/main/preview/image_1.png)
 
-![preview_2](./images/image_2.png)
+![preview_2](https://github.com/TinyCricetus/text-particle/blob/main/preview/image_1.png)
 
 ## Installation
 
