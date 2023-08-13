@@ -1,11 +1,12 @@
 {
   "name": "text-particle",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "Particle effects for text.",
   "main": "./dist/cjs/index.js",
   "module": "./dist/es/index.js",
   "scripts": {
-    "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin rollup-plugin-typescript2"
+    "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin rollup-plugin-typescript2",
+    "publish": "npm publish"
   },
   "keywords": [
     "text",
@@ -13,6 +14,7 @@
     "particles",
     "canvas"
   ],
+  "files": ["dist"],
   "author": "tinycricetus",
   "license": "ISC",
   "devDependencies": {
