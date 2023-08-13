@@ -6,7 +6,7 @@ Create particle effects for text.
 
 ![preview_1](https://github.com/TinyCricetus/text-particle/blob/main/preview/image_1.png)
 
-![preview_2](https://github.com/TinyCricetus/text-particle/blob/main/preview/image_1.png)
+![preview_2](https://github.com/TinyCricetus/text-particle/blob/main/preview/image_2.png)
 
 ## Installation
 
