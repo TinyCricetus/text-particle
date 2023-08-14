@@ -6,6 +6,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
+    "dev": "cd example && pnpm dev",
     "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin rollup-plugin-typescript2",
     "publish:lib": "npm run build && npm publish"
   },

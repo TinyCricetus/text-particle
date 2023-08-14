@@ -1,7 +1,7 @@
 import './index.css'
 
-// to make this effect, need run build script in '../package.json'
-import { render } from '../dist/index'
+// To make this work, you need to 🧵run build in '../package.json' first
+import { ParticleEffect } from '../dist/index'
 
 function run() {
   runExample_1()
@@ -10,13 +10,26 @@ function run() {
 function runExample_1() {
   const root = document.getElementById('container_1')
   if (root) {
-    render({
-      root,
-      text: 'Text',
-      font: 'bold 100px Monospace',
-      width: root.clientWidth,
-      height: root.clientHeight
+    const particleEffect = new ParticleEffect(root, {
+      content: 'Particle',
+      font: 'bold 300px lai',
+      color: '#A5F1E9'
     })
+
+    particleEffect.render()
+
+    const text = ['断桥残雪', '城府', '玫瑰花的葬礼', '合拍', '灰色头像', '如果当时']
+    let index = 0
+    const runSwitch = () => {
+      setTimeout(() => {
+        particleEffect.transitionTo(text[index % text.length], 3000)
+        index++
+
+        runSwitch()
+      }, 5000);
+    }
+
+    runSwitch()
   }
 }
 
