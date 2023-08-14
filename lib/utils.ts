@@ -11,3 +11,27 @@ export function randomChange(value: number, range = 10) {
 
   return value + prefixSign * changeValue
 }
+
+export function useRequestAnimationFrame(callback: (costTime: number) => void) {
+  let id = -1
+
+  const runRAF = (costTime: number) => {
+    if (id >= 0) {
+      // Prevent multiple executions of the run function
+      cancelRAF()
+    }
+
+    callback(costTime)
+
+    id = requestAnimationFrame(time => {
+      runRAF(time)
+    })
+  }
+
+  const cancelRAF = () => {
+    cancelAnimationFrame(id)
+    id = -1
+  }
+
+  return [runRAF, cancelRAF] as const
+}

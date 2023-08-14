@@ -1,9 +1,5 @@
+import { Position } from './interface'
 import { randomChange } from './utils'
-
-export interface Position {
-  x: number
-  y: number
-}
 
 export interface ParticleConfig {
   root: HTMLElement | HTMLCanvasElement
@@ -52,8 +48,8 @@ export async function render(config: ParticleConfig) {
     height = config.height
   }
 
-  canvas.width = 200
-  canvas.height = 100
+  canvas.width = width
+  canvas.height = height
 
   const ctx = canvas.getContext('2d')
   if (!ctx) {
