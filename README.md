@@ -30,17 +30,27 @@ npm install text-particle
 
 ```typescript
 // code
-import { render } from 'text-particle'
+import { ParticleEffect } from '../dist/index'
 
 // The root element can be HTMLElement or HTMLCanvasElement
 const root = document.getElementById('root')
 if (root) {
-  render({
-    root,
-    text: 'Text',
-    font: 'bold 50px Microsoft YaHei',
-    color: '#333333'
+  const particleEffect = new ParticleEffect(root, {
+    content: 'Particle',
+    font: 'bold 80px Arial',
+    color: '#A5F1E9'
   })
+  particleEffect.render()
+  const text = ['Text', 'Particle', '合拍', '如果当时']
+  let index = 0
+  const runSwitch = () => {
+    setTimeout(() => {
+      particleEffect.transitionTo(text[index % text.length], 3000)
+      index++
+      runSwitch()
+    }, 5000);
+  }
+  runSwitch()
 }
 ```
 
