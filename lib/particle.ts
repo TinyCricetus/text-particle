@@ -1,171 +1,7 @@
-// export interface ParticleConfig {
-//   root: HTMLElement | HTMLCanvasElement
-//   text: string
-//   /** Example: 'bold 50px Microsoft YaHei' */
-//   font: string
-
-//   color?: string
-//   stay?: number
-//   changeRange?: number
-//   width?: number
-//   height?: number
-// }
-
-// enum ChangeDirection {
-//   Positive,
-//   Negative
-// }
-
-// export async function render(config: ParticleConfig) {
-//   const {
-//     root,
-//     text,
-//     font,
-//     color = '#dddddd'
-//   } = config
-
-//   let width = 200
-//   let height = 100
-
-//   let canvas: HTMLCanvasElement
-//   if (root instanceof HTMLCanvasElement) {
-//     canvas = root
-//     width = canvas.width
-//     height = canvas.height
-//   } else {
-//     canvas = document.createElement('canvas')
-//     root.appendChild(canvas)
-//   }
-
-//   width = config.width || width
-//   height = config.height || height
-
-//   canvas.width = width
-//   canvas.height = height
-
-//   const ctx = canvas.getContext('2d')
-//   if (!ctx) {
-//     console.warn('Platform does not support canvas 2d.')
-//     return
-//   }
-
-//   function clearCanvas() {
-//     ctx?.clearRect(0, 0, width, height)
-//   }
-
-//   function drawText() {
-//     clearCanvas()
-//     ctx?.fillText(text, Math.floor(width / 2), Math.floor(height / 2))
-//   }
-
-//   ctx.font = font
-//   ctx.fillStyle = '#ffffff'
-//   ctx.textAlign = 'center'
-//   ctx.textBaseline = 'middle'
-
-//   // Custom fonts need to be loaded first
-//   await document.fonts.load(ctx.font)
-
-//   drawText()
-
-//   const interval = 1000 // ms
-//   const stay = 0
-//   const radius = 1
-//   const imageData = ctx.getImageData(0, 0, width, height)
-
-//   let particles = getPositionFromImageData(imageData, 4)
-//   let newParticles = particles
-
-//   // After getting the data, need to use the color specified by the configuration
-//   ctx.fillStyle = color
-//   drawText()
-
-//   let changeDir: ChangeDirection = ChangeDirection.Positive
-//   let start = 0
-
-//   function drawParticles(time = 0) {
-//     if (!ctx) {
-//       return
-//     }
-
-//     let costTime = time - start
-//     const stayTime = costTime - interval
-//     if (
-//       changeDir === ChangeDirection.Positive &&
-//       stayTime > 0 &&
-//       stayTime < stay
-//     ) {
-//       requestAnimationFrame(t => {
-//         drawParticles(t)
-//       })
-
-//       return
-//     }
-
-//     if (costTime > interval || start <= 0) {
-//       updateParticles()
-//       start = time
-//       costTime = 0
-//     }
-
-//     const timeRatio = costTime / interval
-
-//     clearCanvas()
-
-//     for (let i = 0; i < particles.length; i++) {
-//       if (i % 2 === 0) {
-//         continue
-//       }
-
-//       const dx = newParticles[i].x - particles[i].x
-//       const dy = newParticles[i].y - particles[i].y
-
-//       let x = particles[i].x + dx * timeRatio
-//       let y = particles[i].y + dy * timeRatio
-//       const limit = radius * 2
-//       x = Math.max(x, limit)
-//       y = Math.max(y, limit)
-//       x = Math.min(x, width - limit)
-//       y = Math.min(y, height - limit)
-
-//       ctx.moveTo(x, y)
-//       ctx.beginPath()
-//       ctx.arc(x, y, radius, 0, 2 * Math.PI)
-//       ctx.fill()
-//     }
-
-//     requestAnimationFrame(t => {
-//       drawParticles(t)
-//     })
-//   }
-
-//   function updateParticles() {
-//     if (changeDir === ChangeDirection.Positive) {
-//       particles = newParticles
-//       newParticles = particles.map(p => {
-//         return {
-//           x: randomChange(p.x, radius),
-//           y: randomChange(p.y, radius)
-//         }
-//       })
-//     } else {
-//       const temp = particles
-//       particles = newParticles
-//       newParticles = temp
-//     }
-
-//     changeDir = changeDir === ChangeDirection.Positive ?
-//       ChangeDirection.Negative :
-//       ChangeDirection.Positive
-//   }
-
-//   setTimeout(() => {
-//     drawParticles(stay)
-//   }, stay)
-// }
+import { isApproximateEqual, ease, distance } from "./utils"
 
 export class Particle {
-  static from(imageData: ImageData, gap = 1) {
+  static from(imageData: ImageData, gap = 1, radius = 1) {
     const { data, width, height } = imageData
     const result: Particle[] = []
 
@@ -189,7 +25,7 @@ export class Particle {
           b === 255 &&
           a === 255
         ) {
-          result.push(Particle.create(j, i))
+          result.push(Particle.create(j, i, radius))
         }
       }
     }
@@ -197,7 +33,7 @@ export class Particle {
     return result
   }
 
-  static create(x: number, y: number, r = 2) {
+  static create(x: number, y: number, r = 1) {
     return new Particle(x, y, r)
   }
 
@@ -205,33 +41,55 @@ export class Particle {
     return source.copyWithin(start, end).map(s => s.clone())
   }
 
-  get oldX() {
-    return this._oldX
+  get nextX() {
+    return this._nextX
   }
 
-  get oldY() {
-    return this._oldY
+  get nextY() {
+    return this._nextY
   }
 
-  private _oldX
-  private _oldY
+  get preX() {
+    return this._preX
+  }
+
+  get preY() {
+    return this._preY
+  }
+
+  get arrived() {
+    return this._nextX === this.x && this._nextY === this.y
+  }
+
+  private _nextX: number
+  private _nextY: number
+  private _preX: number
+  private _preY: number
 
   constructor(
     public x: number,
     public y: number,
     public r: number
   ) {
-    this._oldX = this.x
-    this._oldY = this.y
+    this._nextX = this._preX = this.x
+    this._nextY = this._preY = this.y
   }
 
   clone() {
     return Particle.create(this.x, this.y, this.r)
   }
 
-  updatePosition(x: number, y: number) {
-    this._oldX = this.x
-    this._oldY = this.y
+  updateNext(x: number, y: number) {
+    this._preX = this.x
+    this._preY = this.y
+
+    this._nextX = x
+    this._nextY = y
+  }
+
+  update(x: number = this._nextX, y: number = this._nextY) {
+    x = isApproximateEqual(x, this._nextX) ? this._nextX : x
+    y = isApproximateEqual(y, this._nextY) ? this._nextY : y
 
     this.x = x
     this.y = y
@@ -240,23 +98,63 @@ export class Particle {
 
 export interface ParticleConfig {
   content: string
-  /** Example: 'bold 50px Microsoft YaHei' */
+
+  /**
+   * Used to control particle composition
+   * 
+   * Example: 'bold 50px Microsoft YaHei'
+   */
   font: string
+
+  /**
+   * Control Particle Radius
+   */
   color: string
+
+  /**
+   * Control Particle Radius
+   */
+  particleRadius: number
+
+  /**
+   * Control the sparsity of the particle distribution
+   */
+  particleGap: number
+
+  /**
+  * Move 1/n of remaining distance per frame.
+  * 
+  * Make 'enableContinuousEasing' true to take this option effect.
+  */
+  moveProportionPerFrame: number
+  /**
+   * Make 'enableContinuousEasing' true to take this option effect
+   */
+  showMouseCircle: boolean
+  enableContinuousEasing: boolean
 }
 
 export class ParticleEffect {
   private canvas: HTMLCanvasElement = document.createElement('canvas')
   private ctx: CanvasRenderingContext2D
+  private unBindMouseEventCallbacks: (() => void)[] = []
 
   private content = ''
   private font = 'bold 200px Arial'
   private color = '#000000'
+  private particleRadius = 2
+  private particleGap = 8
+
+  private moveProportionPerFrame = 30
+  private isContinuousEasing = false
+  private showMouseCircle = false
+
+  private lastAnimationBeginTime = 0
+  private animationTime = 2000
 
   private particles: Particle[] = []
 
-  private lastTime = 0
-  private transitionTime = 2000 // ms
+  private mouseParticle = Particle.create(0, 0, 20)
 
   constructor(root: HTMLElement | HTMLCanvasElement, config: Partial<ParticleConfig>) {
     if (root instanceof HTMLElement) {
@@ -274,22 +172,49 @@ export class ParticleEffect {
     }
 
     this.ctx = canvas2dCtx
-    this.content = config.content || this.content
-    this.font = config.font || this.font
-    this.color = config.color || this.color
+    this.applyConfig(config)
 
     this.generateParticles(this.content).then(particles => {
       this.particles = particles
     })
   }
 
+  destroy() {
+    this.disableMouseListener()
+  }
+
+  applyConfig(config: Partial<ParticleConfig>) {
+    this.content = config.content || this.content
+    this.font = config.font || this.font
+    this.color = config.color || this.color
+    this.particleRadius = config.particleRadius || this.particleRadius
+    this.particleGap = config.particleGap || this.particleGap
+
+    this.isContinuousEasing = config.enableContinuousEasing || false
+    this.showMouseCircle = config.showMouseCircle || false
+    this.moveProportionPerFrame = config.moveProportionPerFrame || this.moveProportionPerFrame
+
+    if (this.showMouseCircle) {
+      this.enableMouseListener()
+    } else {
+      this.disableMouseListener()
+    }
+  }
+
+  /**
+   * 
+   * @param newContent 
+   * @param time this option will be disabled if 'isContinuousEasing' is set to true
+   * @returns 
+   */
   async transitionTo(newContent: string, time = 2000) {
     if (this.content === newContent) {
       return
     }
-    
-    this.transitionTime = time
+
     this.content = newContent
+    this.animationTime = time
+    this.lastAnimationBeginTime = Date.now()
 
     const newParticles = await this.generateParticles(newContent)
     const oldLen = this.particles.length
@@ -311,45 +236,118 @@ export class ParticleEffect {
     newParticles.sort(() => Math.random() > 0.5 ? 1 : -1)
     for (let i = 0; i < len; i++) {
       const { x, y } = newParticles[i]
-      this.particles[i].updatePosition(x, y)
+      this.particles[i].updateNext(x, y)
     }
-
-    this.lastTime = Date.now()
   }
 
   render() {
-    const costTime = Date.now() - this.lastTime
-
     if (this.ctx.fillStyle !== this.color) {
       this.ctx.fillStyle = this.color
     }
 
+    if (this.ctx.strokeStyle !== this.color) {
+      this.ctx.strokeStyle = this.color
+    }
+
+    const costTime = Date.now() - this.lastAnimationBeginTime
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
     this.particles.forEach(p => {
-      let x = p.x
-      let y = p.y
-      if (costTime < this.transitionTime) {
-        const dt = (costTime / this.transitionTime)
-        const dx = dt * (p.x - p.oldX)
-        const dy = dt * (p.y - p.oldY)
-
-        x = p.oldX + dx
-        y = p.oldY + dy
-
-        x = Math.floor(x)
-        y = Math.floor(y)
+      if (this.isContinuousEasing) {
+        this.updateParticleContinuous(p)
+      } else {
+        this.updateParticleEase(costTime, p)
       }
 
-
-      this.ctx.beginPath()
-      this.ctx.moveTo(x, y)
-      this.ctx.arc(x, y, p.r, 0, Math.PI * 2)
-      this.ctx.fill()
+      this.drawParticle(p)
     })
+
+    if (this.showMouseCircle) {
+      this.drawMouseParticle()
+    }
 
     requestAnimationFrame(() => {
       this.render()
     })
+  }
+
+  private enableMouseListener() {
+    const processUnstoppable = (event: MouseEvent) => {
+      // to update unstoppable particle
+      const rect = this.canvas.getBoundingClientRect()
+      const x = event.clientX - rect.left
+      const y = event.clientY - rect.top
+
+      this.mouseParticle.updateNext(x, y)
+    }
+
+    this.canvas.addEventListener('mousemove', processUnstoppable)
+    this.unBindMouseEventCallbacks.push(() => {
+      if (this.canvas) {
+        this.canvas.removeEventListener('mousemove', processUnstoppable)
+      }
+    })
+  }
+
+  private disableMouseListener() {
+    this.unBindMouseEventCallbacks.forEach(cb => cb())
+    this.unBindMouseEventCallbacks = []
+  }
+
+  private updateParticleEase(costTime: number, p: Particle) {
+    const x = ease(costTime, this.animationTime, p.preX, p.nextX)
+    const y = ease(costTime, this.animationTime, p.preY, p.nextY)
+
+    p.update(x, y)
+  }
+
+  private updateParticleContinuous(p: Particle) {
+    // velocity of the remain movement
+    let vx = ((p.nextX - p.x) / this.moveProportionPerFrame)
+    let vy = ((p.nextY - p.y) / this.moveProportionPerFrame)
+
+    if (this.showMouseCircle) {
+      // avoid mouse move
+      const { x, y, r } = this.mouseParticle
+      const dis = distance(x, y, p.x, p.y)
+
+      if (dis < r + 10) {
+        const A = Math.atan2(p.y - y, p.x - x)
+
+        const reverseV = 2 * (r / dis)
+        const reverseVx = Math.cos(A) * reverseV
+        const reverseVy = Math.sin(A) * reverseV
+
+        vx += reverseVx
+        vy += reverseVy
+      }
+    }
+
+    // apply change in this frame
+    p.update(p.x + vx, p.y + vy)
+  }
+
+  private drawMouseParticle() {
+    this.ctx.save()
+
+    this.ctx.strokeStyle = '#ffffff'
+    this.mouseParticle.update()
+    this.drawParticle(this.mouseParticle, true)
+
+    this.ctx.restore()
+  }
+
+  private drawParticle(p: Particle, stroke = false) {
+    let { x, y, r } = p
+
+    this.ctx.moveTo(x, y)
+    this.ctx.beginPath()
+    this.ctx.arc(x, y, r, 0, Math.PI * 2)
+
+    if (stroke) {
+      this.ctx.stroke()
+    } else {
+      this.ctx.fill()
+    }
   }
 
   private async generateParticles(content: string) {
@@ -372,6 +370,6 @@ export class ParticleEffect {
     ctx.fillText(content, Math.floor(width / 2), Math.floor(height / 2))
 
     const tempImageData = ctx.getImageData(0, 0, width, height)
-    return Particle.from(tempImageData, 4)
+    return Particle.from(tempImageData, this.particleGap, this.particleRadius)
   }
 }

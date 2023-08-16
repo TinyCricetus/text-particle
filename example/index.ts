@@ -12,21 +12,25 @@ function runExample_1() {
   if (root) {
     const particleEffect = new ParticleEffect(root, {
       content: 'Particle',
-      font: 'bold 300px lai',
-      color: '#A5F1E9'
+      font: 'bold 200px lai',
+      color: '#F1F0E8',
+      particleGap: 8,
+      particleRadius: 2,
+      showMouseCircle: true,
+      enableContinuousEasing: true,
     })
 
     particleEffect.render()
 
-    const text = ['断桥残雪', '城府', '玫瑰花的葬礼', '合拍', '灰色头像', '如果当时']
+    const text = ['Particle', 'Win', 'Super', 'Good', 'Success', 'Okay']
     let index = 0
     const runSwitch = () => {
-      setTimeout(() => {
-        particleEffect.transitionTo(text[index % text.length], 3000)
-        index++
+      particleEffect.transitionTo(text[index % text.length], 2000)
+      index++
 
+      setTimeout(() => {
         runSwitch()
-      }, 5000);
+      }, 3000);
     }
 
     runSwitch()

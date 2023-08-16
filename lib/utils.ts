@@ -1,37 +1,29 @@
-const MAX_RANGE = 10000
-const MIN_RANGE = 1
+export function distance(x1: number, y1: number, x2: number, y2: number) {
+  const x = Math.abs(x1 - x2)
+  const y = Math.abs(y1 - y2)
 
-export function randomChange(value: number, range = 10) {
-  range = Math.floor(range)
-  range = Math.max(range, MIN_RANGE)
-  range = Math.min(range, MAX_RANGE)
-
-  const prefixSign = Math.random() > 0.5 ? 1 : -1
-  const changeValue = Math.floor(Math.random() * 100000) % range
-
-  return value + prefixSign * changeValue
+  return Math.floor(Math.sqrt(x * x + y * y))
 }
 
-export function useRequestAnimationFrame(callback: (costTime: number) => void) {
-  let id = -1
-
-  const runRAF = (costTime: number) => {
-    if (id >= 0) {
-      // Prevent multiple executions of the run function
-      cancelRAF()
-    }
-
-    callback(costTime)
-
-    id = requestAnimationFrame(time => {
-      runRAF(time)
-    })
+/**
+ * 
+ * @param t cost time
+ * @param d duration time
+ * @param p particle
+ * @returns 
+ */
+export function ease(t: number, d: number, s: number, e: number) {
+  if (t >= d) {
+    return e
   }
 
-  const cancelRAF = () => {
-    cancelAnimationFrame(id)
-    id = -1
-  }
+  const x = t / d
+  // const y = -x * x + 2 * x
+  const y = -x * x + 2 * x
 
-  return [runRAF, cancelRAF] as const
+  return s + (e - s) * y
+}
+
+export function isApproximateEqual(a: number, b: number) {
+  return Math.abs(a - b) <= 1.0
 }
