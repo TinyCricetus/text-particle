@@ -1,6 +1,7 @@
 import Webpack from 'webpack'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 import path from 'path'
+import 'webpack-dev-server'
 
 const config: Webpack.Configuration = {
   mode: 'development',
@@ -30,10 +31,18 @@ const config: Webpack.Configuration = {
     ]
   },
 
+  devServer: {
+    open: true,
+    static: {
+      directory: path.resolve(__dirname, './assets'),
+      publicPath: '/assets'
+    }
+  },
+
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, './index.html'),
-      favicon: path.resolve(__dirname, './favicon.png')
+      template: path.resolve(__dirname, './public/index.html'),
+      favicon: path.resolve(__dirname, './public/favicon.png'),
     })
   ]
 }

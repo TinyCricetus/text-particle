@@ -19,12 +19,7 @@ export class Particle {
         b = data[index + 2]
         a = data[index + 3]
 
-        if (
-          r === 255 &&
-          g === 255 &&
-          b === 255 &&
-          a === 255
-        ) {
+        if (r > 120 && g > 120 && b > 120 && a > 120) {
           result.push(Particle.create(j, i, radius))
         }
       }
@@ -33,8 +28,8 @@ export class Particle {
     return result
   }
 
-  static create(x: number, y: number, r = 1) {
-    return new Particle(x, y, r)
+  static create(x: number, y: number, r = 1, c = '#ffffff') {
+    return new Particle(x, y, r, c)
   }
 
   static copyWithin(source: Particle[], start = 0, end = source.length) {
@@ -69,7 +64,8 @@ export class Particle {
   constructor(
     public x: number,
     public y: number,
-    public r: number
+    public r: number,
+    public color: string
   ) {
     this._nextX = this._preX = this.x
     this._nextY = this._preY = this.y

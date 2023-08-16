@@ -1,5 +1,9 @@
 import { Particle } from "../core/particle"
-import { ParticleConfig, ParticleEffect, ParticleEffectRoot } from "../core/particle-effect"
+import {
+  ParticleConfig,
+  ParticleEffect,
+  ParticleEffectRoot
+} from "../core/particle-effect"
 
 export interface TextParticleConfig extends ParticleConfig {
   /**
@@ -11,13 +15,20 @@ export interface TextParticleConfig extends ParticleConfig {
 }
 
 export class TextParticle extends ParticleEffect {
-  protected font = 'bold 200px Arial'
+  private font = 'bold 200px Arial'
 
   constructor(root: ParticleEffectRoot, config: Partial<TextParticleConfig>) {
-    super(root, config)
+    super(root)
+
+    this.applyConfig(config)
+    this.initPromise = this.generateParticles(this.source)
+    this.initPromise.then(particles => {
+      this.initPromise = null
+      this.particles = particles
+    })
   }
 
-  override applyConfig(config: Partial<TextParticleConfig>): void {
+  override applyConfig(config: Partial<TextParticleConfig>) {
     super.applyConfig(config)
     this.font = config.font || this.font
   }

@@ -34,10 +34,11 @@ export interface ParticleConfig {
 
 export type ParticleEffectRoot = HTMLElement | HTMLCanvasElement
 
-export class ParticleEffect {
+export abstract class ParticleEffect {
   protected canvas: HTMLCanvasElement = document.createElement('canvas')
   protected ctx: CanvasRenderingContext2D
-  protected unBindMouseEventCallbacks: (() => void)[] = []
+  protected unBindMouseEventCallback: (() => void) | null = null
+  protected initPromise: Promise<Particle[]> | null = null
 
   protected source = ''
   protected color = '#000000'
@@ -53,9 +54,9 @@ export class ParticleEffect {
 
   protected particles: Particle[] = []
 
-  protected mouseParticle = Particle.create(0, 0, 20)
+  protected mouseParticle: Particle | null = null
 
-  constructor(root: ParticleEffectRoot, config: Partial<ParticleConfig>) {
+  constructor(root: ParticleEffectRoot) {
     if (root instanceof HTMLElement) {
       const { clientHeight, clientWidth } = root
       this.canvas.width = clientWidth
@@ -71,11 +72,6 @@ export class ParticleEffect {
     }
 
     this.ctx = canvas2dCtx
-    this.applyConfig(config)
-
-    this.generateParticles(this.source).then(particles => {
-      this.particles = particles
-    })
   }
 
   destroy() {
@@ -102,7 +98,7 @@ export class ParticleEffect {
   /**
    * 
    * @param newSource 
-   * @param time this option will be disabled if 'isContinuousEasing' is set to true
+   * @param time this option will be disabled if 'enableContinuousEasing' is set to true
    * @returns 
    */
   async transitionTo(newSource: string, time = 2000) {
@@ -115,6 +111,11 @@ export class ParticleEffect {
     this.lastAnimationBeginTime = Date.now()
 
     const newParticles = await this.generateParticles(newSource)
+    if (this.initPromise) {
+      await this.initPromise
+      this.initPromise = null
+    }
+
     const oldLen = this.particles.length
     const newLen = newParticles.length
 
@@ -168,8 +169,16 @@ export class ParticleEffect {
     })
   }
 
-  protected enableMouseListener() {
-    const processUnstoppable = (event: MouseEvent) => {
+  protected async generateParticles(source: string): Promise<Particle[]> {
+    throw new Error('generateParticles need to be implemented')
+  }
+
+  private enableMouseListener() {
+    const onMousemove = (event: MouseEvent) => {
+      if (!this.mouseParticle) {
+        this.mouseParticle = Particle.create(-100, -100, 20)
+      }
+
       // to update unstoppable particle
       const rect = this.canvas.getBoundingClientRect()
       const x = event.clientX - rect.left
@@ -178,32 +187,38 @@ export class ParticleEffect {
       this.mouseParticle.updateNext(x, y)
     }
 
-    this.canvas.addEventListener('mousemove', processUnstoppable)
-    this.unBindMouseEventCallbacks.push(() => {
+    const onMouseLeave = () => {
+      this.mouseParticle = null
+    }
+
+    this.canvas.addEventListener('mousemove', onMousemove)
+    this.canvas.addEventListener('mouseleave', onMouseLeave)
+    this.unBindMouseEventCallback = () => {
+      this.mouseParticle = null
       if (this.canvas) {
-        this.canvas.removeEventListener('mousemove', processUnstoppable)
+        this.canvas.removeEventListener('mousemove', onMousemove)
+        this.canvas.removeEventListener('mouseleave', onMouseLeave)
       }
-    })
+    }
   }
 
-  protected disableMouseListener() {
-    this.unBindMouseEventCallbacks.forEach(cb => cb())
-    this.unBindMouseEventCallbacks = []
+  private disableMouseListener() {
+    this.unBindMouseEventCallback?.()
   }
 
-  protected updateParticleEase(costTime: number, p: Particle) {
+  private updateParticleEase(costTime: number, p: Particle) {
     const x = ease(costTime, this.animationTime, p.preX, p.nextX)
     const y = ease(costTime, this.animationTime, p.preY, p.nextY)
 
     p.update(x, y)
   }
 
-  protected updateParticleContinuous(p: Particle) {
+  private updateParticleContinuous(p: Particle) {
     // velocity of the remain movement
     let vx = ((p.nextX - p.x) / this.moveProportionPerFrame)
     let vy = ((p.nextY - p.y) / this.moveProportionPerFrame)
 
-    if (this.showMouseCircle) {
+    if (this.showMouseCircle && this.mouseParticle) {
       // avoid mouse move
       const { x, y, r } = this.mouseParticle
       const dis = distance(x, y, p.x, p.y)
@@ -224,7 +239,11 @@ export class ParticleEffect {
     p.update(p.x + vx, p.y + vy)
   }
 
-  protected drawMouseParticle() {
+  private drawMouseParticle() {
+    if (!this.mouseParticle) {
+      return
+    }
+
     this.ctx.save()
 
     this.ctx.strokeStyle = '#ffffff'
@@ -234,7 +253,7 @@ export class ParticleEffect {
     this.ctx.restore()
   }
 
-  protected drawParticle(p: Particle, stroke = false) {
+  private drawParticle(p: Particle, stroke = false) {
     let { x, y, r } = p
 
     this.ctx.moveTo(x, y)
@@ -246,9 +265,5 @@ export class ParticleEffect {
     } else {
       this.ctx.fill()
     }
-  }
-
-  protected async generateParticles(source: string): Promise<Particle[]> {
-    throw new Error('generateParticles need to be implemented')
   }
 }
