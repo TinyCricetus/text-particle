@@ -108,7 +108,6 @@ export abstract class ParticleEffect {
 
     this.source = newSource
     this.animationTime = time
-    this.lastAnimationBeginTime = Date.now()
 
     const newParticles = await this.generateParticles(newSource)
     if (this.initPromise) {
@@ -137,6 +136,9 @@ export abstract class ParticleEffect {
       const { x, y } = newParticles[i]
       this.particles[i].updateNext(x, y)
     }
+
+    // Be sure to record the time here, because the await expression takes time
+    this.lastAnimationBeginTime = Date.now()
   }
 
   render() {

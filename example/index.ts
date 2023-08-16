@@ -23,7 +23,7 @@ function runExample_1() {
 
     particleEffect.render()
 
-    const text = ['Particle', 'Win', 'Super', 'Good', 'Success', 'Okay']
+    const text = ['Genshin', 'Impact', 'Honkai', 'Paimon', 'Keqing', 'Klee']
     let index = 0
     const runSwitch = () => {
       particleEffect.transitionTo(text[index % text.length], 2000)
@@ -31,7 +31,7 @@ function runExample_1() {
 
       setTimeout(() => {
         runSwitch()
-      }, 3000)
+      }, 4000)
     }
 
     runSwitch()
@@ -57,7 +57,7 @@ function runExample_2() {
   const particleEffect = new ImageParticle(root, {
     source: images[0],
     color: '#F1F0E8',
-    particleGap: 3,
+    particleGap: 4,
     particleRadius: 2,
     showMouseCircle: false,
     enableContinuousEasing: false,
@@ -69,7 +69,7 @@ function runExample_2() {
   const delay = 8000
 
   const runSwitch = () => {
-    particleEffect.transitionTo(images[index % images.length], 6000)
+    particleEffect.transitionTo(images[index % images.length], 8000)
     index++
 
     setTimeout(() => {
