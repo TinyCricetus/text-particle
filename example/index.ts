@@ -69,7 +69,7 @@ function runExample_2() {
   const delay = 8000
 
   const runSwitch = () => {
-    particleEffect.transitionTo(images[index % images.length], 8000)
+    particleEffect.transitionTo(images[index % images.length], 6000)
     index++
 
     setTimeout(() => {
