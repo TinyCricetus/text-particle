@@ -103,12 +103,12 @@ export abstract class ParticleEffect {
    * @returns 
    */
   async transitionTo(newSource: string, time = 2000) {
-    if (this.source === newSource) {
+    if (!this.isRendering) {
+      this.render(newSource)
       return
     }
 
-    if (!this.isRendering) {
-      this.render(newSource)
+    if (this.source === newSource) {
       return
     }
 
@@ -143,10 +143,9 @@ export abstract class ParticleEffect {
   }
 
   async render(source?: string) {
-    this.isRendering = true
     // Load particles first
-    await this.ensureParticles(source || this.source)
-
+    await this.updateParticles(source)
+    
     const _render = () => {
       if (this.ctx.fillStyle !== this.color) {
         this.ctx.fillStyle = this.color
@@ -177,22 +176,18 @@ export abstract class ParticleEffect {
       })
     }
 
-    _render()
+    if (!this.isRendering) {
+      this.isRendering = true
+      _render()
+    }
   }
 
   protected async generateParticles(source: string): Promise<Particle[]> {
     throw new Error('generateParticles need to be implemented')
   }
 
-  protected async ensureParticles(source: string) {
-    if (
-      this.source === source ||
-      this.particles.length
-    ) {
-      return
-    }
-
-    this.source = source
+  private async updateParticles(source?: string) {
+    this.source = source || this.source
     if (!this.source) {
       throw new Error('particle effect need a source to generate!')
     }
