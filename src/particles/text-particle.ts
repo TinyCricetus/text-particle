@@ -18,18 +18,8 @@ export class TextParticle extends ParticleEffect {
   private font = 'bold 200px Arial'
 
   constructor(root: ParticleEffectRoot, config: Partial<TextParticleConfig>) {
-    super(root)
+    super(root, config)
 
-    this.applyConfig(config)
-    this.initPromise = this.generateParticles(this.source)
-    this.initPromise.then(particles => {
-      this.initPromise = null
-      this.particles = particles
-    })
-  }
-
-  override applyConfig(config: Partial<TextParticleConfig>) {
-    super.applyConfig(config)
     this.font = config.font || this.font
   }
 

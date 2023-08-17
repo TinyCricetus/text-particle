@@ -12,7 +12,6 @@ function runExample_1() {
   const root = document.getElementById('container_1')
   if (root) {
     const particleEffect = new TextParticle(root, {
-      source: 'Particle',
       font: 'bold 200px lai',
       color: '#F1F0E8',
       particleGap: 8,
@@ -21,7 +20,7 @@ function runExample_1() {
       enableContinuousEasing: true,
     })
 
-    particleEffect.render()
+    particleEffect.render('Particle')
 
     const text = ['Genshin', 'Impact', 'Honkai', 'Paimon', 'Keqing', 'Klee']
     let index = 0
@@ -34,7 +33,9 @@ function runExample_1() {
       }, 4000)
     }
 
-    runSwitch()
+    setTimeout(() => {
+      runSwitch()
+    }, 4000)
   }
 }
 
@@ -55,7 +56,6 @@ function runExample_2() {
   }
 
   const particleEffect = new ImageParticle(root, {
-    source: images[0],
     color: '#F1F0E8',
     particleGap: 4,
     particleRadius: 2,
@@ -63,7 +63,7 @@ function runExample_2() {
     enableContinuousEasing: false,
   })
 
-  particleEffect.render()
+  particleEffect.render(images[0])
 
   let index = 1
   const delay = 8000

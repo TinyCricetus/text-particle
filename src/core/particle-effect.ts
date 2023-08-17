@@ -37,8 +37,8 @@ export type ParticleEffectRoot = HTMLElement | HTMLCanvasElement
 export abstract class ParticleEffect {
   protected canvas: HTMLCanvasElement = document.createElement('canvas')
   protected ctx: CanvasRenderingContext2D
+  protected isRendering = false
   protected unBindMouseEventCallback: (() => void) | null = null
-  protected initPromise: Promise<Particle[]> | null = null
 
   protected source = ''
   protected color = '#000000'
@@ -56,7 +56,7 @@ export abstract class ParticleEffect {
 
   protected mouseParticle: Particle | null = null
 
-  constructor(root: ParticleEffectRoot) {
+  protected constructor(root: ParticleEffectRoot, config: Partial<ParticleConfig>) {
     if (root instanceof HTMLElement) {
       const { clientHeight, clientWidth } = root
       this.canvas.width = clientWidth
@@ -72,6 +72,7 @@ export abstract class ParticleEffect {
     }
 
     this.ctx = canvas2dCtx
+    this.applyConfig(config)
   }
 
   destroy() {
@@ -106,18 +107,18 @@ export abstract class ParticleEffect {
       return
     }
 
+    if (!this.isRendering) {
+      this.render(newSource)
+      return
+    }
+
     this.source = newSource
     this.animationTime = time
 
     const newParticles = await this.generateParticles(newSource)
-    if (this.initPromise) {
-      await this.initPromise
-      this.initPromise = null
-    }
 
     const oldLen = this.particles.length
     const newLen = newParticles.length
-
     if (oldLen < newLen) {
       const difference = newLen - oldLen
       const extra: Particle[] = []
@@ -141,38 +142,62 @@ export abstract class ParticleEffect {
     this.lastAnimationBeginTime = Date.now()
   }
 
-  render() {
-    if (this.ctx.fillStyle !== this.color) {
-      this.ctx.fillStyle = this.color
-    }
+  async render(source?: string) {
+    this.isRendering = true
+    // Load particles first
+    await this.ensureParticles(source || this.source)
 
-    if (this.ctx.strokeStyle !== this.color) {
-      this.ctx.strokeStyle = this.color
-    }
-
-    const costTime = Date.now() - this.lastAnimationBeginTime
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    this.particles.forEach(p => {
-      if (this.isContinuousEasing) {
-        this.updateParticleContinuous(p)
-      } else {
-        this.updateParticleEase(costTime, p)
+    const _render = () => {
+      if (this.ctx.fillStyle !== this.color) {
+        this.ctx.fillStyle = this.color
       }
 
-      this.drawParticle(p)
-    })
+      if (this.ctx.strokeStyle !== this.color) {
+        this.ctx.strokeStyle = this.color
+      }
 
-    if (this.showMouseCircle) {
-      this.drawMouseParticle()
+      const costTime = Date.now() - this.lastAnimationBeginTime
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      this.particles.forEach(p => {
+        if (this.isContinuousEasing) {
+          this.updateParticleContinuous(p)
+        } else {
+          this.updateParticleEase(costTime, p)
+        }
+
+        this.drawParticle(p)
+      })
+
+      if (this.showMouseCircle) {
+        this.drawMouseParticle()
+      }
+
+      requestAnimationFrame(() => {
+        _render()
+      })
     }
 
-    requestAnimationFrame(() => {
-      this.render()
-    })
+    _render()
   }
 
   protected async generateParticles(source: string): Promise<Particle[]> {
     throw new Error('generateParticles need to be implemented')
+  }
+
+  protected async ensureParticles(source: string) {
+    if (
+      this.source === source ||
+      this.particles.length
+    ) {
+      return
+    }
+
+    this.source = source
+    if (!this.source) {
+      throw new Error('particle effect need a source to generate!')
+    }
+
+    this.particles = await this.generateParticles(this.source)
   }
 
   private enableMouseListener() {

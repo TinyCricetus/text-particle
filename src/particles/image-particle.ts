@@ -5,22 +5,9 @@ import {
   ParticleEffectRoot
 } from "../core/particle-effect"
 
-export interface ImageParticleConfig extends ParticleConfig {}
-
 export class ImageParticle extends ParticleEffect {
-  constructor(root: ParticleEffectRoot, config: Partial<ImageParticleConfig>) {
-    super(root)
-
-    this.applyConfig(config)
-    this.initPromise = this.generateParticles(this.source)
-    this.initPromise.then(particles => {
-      this.initPromise = null
-      this.particles = particles
-    })
-  }
-
-  override applyConfig(config: Partial<ImageParticleConfig>) {
-    super.applyConfig(config)
+  constructor(root: ParticleEffectRoot, config: Partial<ParticleConfig>) {
+    super(root, config)
   }
 
   override async generateParticles(source: string) {
