@@ -14,13 +14,11 @@ export interface TextParticleConfig extends ParticleConfig {
   font?: string
 
   textAlign?: CanvasTextAlign
-  textBaseline?: CanvasTextBaseline
 }
 
 export class TextParticle extends ParticleEffect {
   private font = 'bold 60px Arial'
   private textAlign: CanvasTextAlign = 'center'
-  private textBaseline: CanvasTextBaseline = 'middle'
 
   constructor(root: ParticleEffectRoot, config: TextParticleConfig) {
     super(root, config)
@@ -30,7 +28,6 @@ export class TextParticle extends ParticleEffect {
   override applyConfig(config: Partial<TextParticleConfig>): void {
     super.applyConfig(config)
     this.font = config.font || this.font
-    this.textBaseline = config.textBaseline || this.textBaseline
     this.textAlign = config.textAlign || this.textAlign
   }
 
@@ -47,11 +44,22 @@ export class TextParticle extends ParticleEffect {
     ctx.fillStyle = '#ffffff'
     ctx.font = this.font
     ctx.textAlign = this.textAlign
-    ctx.textBaseline = this.textBaseline
+    ctx.textBaseline = 'middle'
 
     await document.fonts.load(ctx.font)
 
-    ctx.fillText(source, Math.floor(width / 2), Math.floor(height / 2))
+    let x = 0
+    let y = height / 2
+    if (this.textAlign === 'center') {
+      x = width / 2
+    } else if (this.textAlign === 'right') {
+      // const { width: measureWidth } = ctx.measureText(this.source)
+      x = width
+    } else {
+      x = 0
+    }
+    
+    ctx.fillText(source, Math.floor(x), Math.floor(y))
 
     const tempImageData = ctx.getImageData(0, 0, width, height)
     return Particle.from(tempImageData, this.particleGap, this.particleRadius)

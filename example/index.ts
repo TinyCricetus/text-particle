@@ -18,6 +18,7 @@ function runExample_1() {
       // Set a color to improve particle performance
       // If you want the original color of the image, set this option to an empty string
       color: '#F1F0E8',
+      textAlign: 'center',
       particleGap: 8,
       particleRadius: 2,
       showMouseCircle: true,
