@@ -312,9 +312,9 @@ export abstract class ParticleEffect {
     particles.forEach(p => {
       if (this.particleGap <= 1) {
         // When the gap is less than 1, we can replace the circle with a rectangle
-        this.ctx.rect(p.x - p.r, p.y - p.r, p.r * 2, p.r * 2)
+        this.ctx.rect(p.x, p.y, p.r * 2, p.r * 2)
       } else {
-        this.ctx.roundRect(p.x - p.r, p.y - p.r, p.r * 2, p.r * 2, p.r)
+        this.ctx.roundRect(p.x, p.y, p.r * 2, p.r * 2, p.r)
       }
     })
 
