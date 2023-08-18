@@ -120,6 +120,9 @@ function runExample_2() {
 
   const particleEffect = new ImageParticle(root, {
     source: images[0],
+    // Set a color to improve particle performance
+    // If you want the original color of the image, ignore it
+    // Note: The performance of drawing without setting a uniform color will be lower
     color: '#F1F0E8',
     particleGap: 4,
     particleRadius: 2,

@@ -15,7 +15,8 @@ function runExample_1() {
       source: 'Particle',
       // Custom font need to set in css '@font-face' first 
       font: 'bold 200px lai',
-      // Set the color to improve the particle performance
+      // Set a color to improve particle performance
+      // If you want the original color of the image, set this option to an empty string
       color: '#F1F0E8',
       particleGap: 8,
       particleRadius: 2,
@@ -59,7 +60,8 @@ function runExample_2() {
 
   const particleEffect = new ImageParticle(root, {
     source: images[0],
-    // Set the color to improve the particle performance
+    // Set a color to improve particle performance
+    // If you want the original color of the image, set this option to an empty string
     color: '#dddddd',
     particleGap: 2,
     particleRadius: 1,
