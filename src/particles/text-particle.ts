@@ -9,18 +9,29 @@ export interface TextParticleConfig extends ParticleConfig {
   /**
  * Used to control particle composition
  * 
- * Example: 'bold 50px Microsoft YaHei'
+ * Example: 'bold 60px Arial'
  */
-  font: string
+  font?: string
+
+  textAlign?: CanvasTextAlign
+  textBaseline?: CanvasTextBaseline
 }
 
 export class TextParticle extends ParticleEffect {
-  private font = 'bold 200px Arial'
+  private font = 'bold 60px Arial'
+  private textAlign: CanvasTextAlign = 'center'
+  private textBaseline: CanvasTextBaseline = 'middle'
 
-  constructor(root: ParticleEffectRoot, config: Partial<TextParticleConfig>) {
+  constructor(root: ParticleEffectRoot, config: TextParticleConfig) {
     super(root, config)
+    this.applyConfig(config)
+  }
 
+  override applyConfig(config: Partial<TextParticleConfig>): void {
+    super.applyConfig(config)
     this.font = config.font || this.font
+    this.textBaseline = config.textBaseline || this.textBaseline
+    this.textAlign = config.textAlign || this.textAlign
   }
 
   override async generateParticles(source: string) {
@@ -35,8 +46,8 @@ export class TextParticle extends ParticleEffect {
 
     ctx.fillStyle = '#ffffff'
     ctx.font = this.font
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
+    ctx.textAlign = this.textAlign
+    ctx.textBaseline = this.textBaseline
 
     await document.fonts.load(ctx.font)
 

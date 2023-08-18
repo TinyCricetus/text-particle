@@ -62,7 +62,7 @@ function runExample_2() {
     source: images[0],
     // Set a color to improve particle performance
     // If you want the original color of the image, set this option to an empty string
-    color: '#dddddd',
+    color: '#ffffff',
     particleGap: 2,
     particleRadius: 1,
     showMouseCircle: false,

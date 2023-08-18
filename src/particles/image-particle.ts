@@ -6,7 +6,7 @@ import {
 } from "../core/particle-effect"
 
 export class ImageParticle extends ParticleEffect {
-  constructor(root: ParticleEffectRoot, config: Partial<ParticleConfig>) {
+  constructor(root: ParticleEffectRoot, config: ParticleConfig) {
     super(root, config)
   }
 

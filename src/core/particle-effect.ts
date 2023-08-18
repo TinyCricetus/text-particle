@@ -4,34 +4,37 @@ import { distance, ease } from "./utils"
 export interface ParticleConfig {
   source: string
 
+  width?: number
+  height?: number
+
   /**
    * Control Particle Radius
    * 
    * Tip: Setting a color will improve particle performance
    */
-  color: string
+  color?: string
 
   /**
    * Control Particle Radius
    */
-  particleRadius: number
+  particleRadius?: number
 
   /**
    * Control the sparsity of the particle distribution
    */
-  particleGap: number
+  particleGap?: number
 
   /**
   * Move 1/n of remaining distance per frame.
   * 
   * Make 'enableContinuousEasing' true to take this option effect.
   */
-  moveProportionPerFrame: number
+  moveProportionPerFrame?: number
   /**
    * Make 'enableContinuousEasing' true to take this option effect
    */
-  showMouseCircle: boolean
-  enableContinuousEasing: boolean
+  showMouseCircle?: boolean
+  enableContinuousEasing?: boolean
 }
 
 export type ParticleEffectRoot = HTMLElement | HTMLCanvasElement
@@ -48,8 +51,8 @@ export abstract class ParticleEffect {
 
   protected source = ''
   protected color = ''
-  protected particleRadius = 2
-  protected particleGap = 8
+  protected particleRadius = 1
+  protected particleGap = 2
 
   protected moveProportionPerFrame = 30
   protected isContinuousEasing = false
@@ -62,15 +65,16 @@ export abstract class ParticleEffect {
 
   protected mouseParticle: Particle | null = null
 
-  protected constructor(root: ParticleEffectRoot, config: Partial<ParticleConfig>) {
+  protected constructor(root: ParticleEffectRoot, config: ParticleConfig) {
     if (root instanceof HTMLElement) {
-      const { clientHeight, clientWidth } = root
-      this.canvas.width = clientWidth
-      this.canvas.height = clientHeight
       root.appendChild(this.canvas)
     } else {
       this.canvas = root
     }
+    
+    const { clientHeight, clientWidth } = root
+    this.canvas.width = config.width || clientWidth
+    this.canvas.height = config.height || clientHeight
 
     const canvas2dCtx = this.canvas.getContext('2d')
     if (!canvas2dCtx) {
@@ -88,7 +92,7 @@ export abstract class ParticleEffect {
   applyConfig(config: Partial<ParticleConfig>) {
     this.source = config.source || this.source
     this.color = config.color || this.color
-    
+
     this.particleRadius = config.particleRadius || this.particleRadius
     this.particleGap = config.particleGap || this.particleGap
     // limit the gap and radius
