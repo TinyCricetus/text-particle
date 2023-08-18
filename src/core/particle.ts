@@ -19,8 +19,9 @@ export class Particle {
         b = data[index + 2]
         a = data[index + 3]
 
-        if (r > 120 && g > 120 && b > 120 && a > 120) {
-          result.push(Particle.create(j, i, radius))
+        if (r > 125 && g > 125 && b > 125 && a > 125) {
+          const color = `rgba(${r}, ${g}, ${b}, ${a})`
+          result.push(Particle.create(j, i, radius, color))
         }
       }
     }
@@ -28,7 +29,7 @@ export class Particle {
     return result
   }
 
-  static create(x: number, y: number, r = 1, c = '#ffffff') {
+  static create(x: number, y: number, r = 1, c = '#000000') {
     return new Particle(x, y, r, c)
   }
 
@@ -75,12 +76,15 @@ export class Particle {
     return Particle.create(this.x, this.y, this.r)
   }
 
-  updateNext(x: number, y: number) {
+  updateNext(x: number, y: number, r = this.r, c = this.color) {
     this._preX = this.x
     this._preY = this.y
 
     this._nextX = x
     this._nextY = y
+
+    this.r = r
+    this.color = c
   }
 
   update(x: number = this._nextX, y: number = this._nextY) {

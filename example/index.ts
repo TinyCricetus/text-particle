@@ -13,7 +13,9 @@ function runExample_1() {
   if (root) {
     const particleEffect = new TextParticle(root, {
       source: 'Particle',
+      // Custom font need to set in css '@font-face' first 
       font: 'bold 200px lai',
+      // Set the color to improve the particle performance
       color: '#F1F0E8',
       particleGap: 8,
       particleRadius: 2,
@@ -31,7 +33,7 @@ function runExample_1() {
 
       setTimeout(() => {
         runSwitch()
-      }, 4000)
+      }, 6000)
     }
 
     setTimeout(() => {
@@ -43,7 +45,6 @@ function runExample_1() {
 function runExample_2() {
   const images = [
     '/assets/22e21662b3d7e092cc1761edcb1f9c672670fd7c.png@1256w_1132h_!web-article-pic.webp',
-    '/assets/5dffdbd1644cc2e6df1fffd22807793b64f24410.png@1256w_1464h_!web-article-pic.webp',
     '/assets/0d49ea33e131f9083c17c577e9b9657c63ae2e8c.png@1256w_1032h_!web-article-pic.webp',
     '/assets/86f28321e6eaa4ab070c1f6cc150d6432795811a.png@1256w_1048h_!web-article-pic.webp',
     '/assets/80793ec461c1b53cbd3abfd4561d51d4c9e6d195.png@1256w_1142h_!web-article-pic.webp',
@@ -58,9 +59,10 @@ function runExample_2() {
 
   const particleEffect = new ImageParticle(root, {
     source: images[0],
-    color: '#F1F0E8',
-    particleGap: 4,
-    particleRadius: 2,
+    // Set the color to improve the particle performance
+    color: '#dddddd',
+    particleGap: 2,
+    particleRadius: 1,
     showMouseCircle: false,
     enableContinuousEasing: false,
   })

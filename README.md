@@ -82,6 +82,7 @@ function runExample_1() {
   if (root) {
     const particleEffect = new TextParticle(root, {
       source: 'Particle',
+      // Custom font need to set in css '@font-face' first 
       font: 'bold 200px custom',
       color: '#F1F0E8',
       particleGap: 8,

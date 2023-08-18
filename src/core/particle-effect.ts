@@ -6,6 +6,8 @@ export interface ParticleConfig {
 
   /**
    * Control Particle Radius
+   * 
+   * Tip: Setting a color will improve particle performance
    */
   color: string
 
@@ -35,13 +37,17 @@ export interface ParticleConfig {
 export type ParticleEffectRoot = HTMLElement | HTMLCanvasElement
 
 export abstract class ParticleEffect {
+  get canBatchDraw() {
+    return Boolean(this.color)
+  }
+
   protected canvas: HTMLCanvasElement = document.createElement('canvas')
   protected ctx: CanvasRenderingContext2D
   protected isRendering = false
   protected unBindMouseEventCallback: (() => void) | null = null
 
   protected source = ''
-  protected color = '#000000'
+  protected color = ''
   protected particleRadius = 2
   protected particleGap = 8
 
@@ -82,12 +88,16 @@ export abstract class ParticleEffect {
   applyConfig(config: Partial<ParticleConfig>) {
     this.source = config.source || this.source
     this.color = config.color || this.color
+    
     this.particleRadius = config.particleRadius || this.particleRadius
     this.particleGap = config.particleGap || this.particleGap
+    // limit the gap and radius
+    this.particleGap = Math.max(1, this.particleGap)
+    this.particleRadius = Math.max(1, this.particleRadius)
 
-    this.isContinuousEasing = config.enableContinuousEasing || false
-    this.showMouseCircle = config.showMouseCircle || false
-    this.moveProportionPerFrame = config.moveProportionPerFrame || this.moveProportionPerFrame
+    this.isContinuousEasing = config.enableContinuousEasing ?? this.isContinuousEasing
+    this.showMouseCircle = config.showMouseCircle ?? this.showMouseCircle
+    this.moveProportionPerFrame = config.moveProportionPerFrame ?? this.moveProportionPerFrame
 
     if (this.showMouseCircle) {
       this.enableMouseListener()
@@ -145,30 +155,29 @@ export abstract class ParticleEffect {
   async render(source?: string) {
     // Load particles first
     await this.updateParticles(source)
-    
+
     const _render = () => {
-      if (this.ctx.fillStyle !== this.color) {
-        this.ctx.fillStyle = this.color
-      }
-
-      if (this.ctx.strokeStyle !== this.color) {
-        this.ctx.strokeStyle = this.color
-      }
-
       const costTime = Date.now() - this.lastAnimationBeginTime
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
       this.particles.forEach(p => {
         if (this.isContinuousEasing) {
           this.updateParticleContinuous(p)
         } else {
           this.updateParticleEase(costTime, p)
         }
-
-        this.drawParticle(p)
       })
 
-      if (this.showMouseCircle) {
-        this.drawMouseParticle()
+      if (this.canBatchDraw) {
+        this.batchDraw(this.particles)
+      } else {
+        this.particles.forEach(p => {
+          this.singleDraw(p)
+        })
+      }
+
+      if (this.mouseParticle) {
+        this.singleDraw(this.mouseParticle, true)
       }
 
       requestAnimationFrame(() => {
@@ -198,7 +207,7 @@ export abstract class ParticleEffect {
   private enableMouseListener() {
     const onMousemove = (event: MouseEvent) => {
       if (!this.mouseParticle) {
-        this.mouseParticle = Particle.create(-100, -100, 20)
+        this.mouseParticle = Particle.create(-100, -100, 20, '#ffffff')
       }
 
       // to update unstoppable particle
@@ -207,6 +216,7 @@ export abstract class ParticleEffect {
       const y = event.clientY - rect.top
 
       this.mouseParticle.updateNext(x, y)
+      this.mouseParticle.update()
     }
 
     const onMouseLeave = () => {
@@ -261,22 +271,20 @@ export abstract class ParticleEffect {
     p.update(p.x + vx, p.y + vy)
   }
 
-  private drawMouseParticle() {
-    if (!this.mouseParticle) {
-      return
+  private updateDrawStyle(color: string) {
+    if (this.ctx.fillStyle !== color) {
+      this.ctx.fillStyle = color
     }
 
-    this.ctx.save()
-
-    this.ctx.strokeStyle = '#ffffff'
-    this.mouseParticle.update()
-    this.drawParticle(this.mouseParticle, true)
-
-    this.ctx.restore()
+    if (this.ctx.strokeStyle !== color) {
+      this.ctx.strokeStyle = color
+    }
   }
 
-  private drawParticle(p: Particle, stroke = false) {
-    let { x, y, r } = p
+  private singleDraw(p: Particle, stroke = false) {
+    let { x, y, r, color } = p
+
+    this.updateDrawStyle(color)
 
     this.ctx.moveTo(x, y)
     this.ctx.beginPath()
@@ -287,5 +295,25 @@ export abstract class ParticleEffect {
     } else {
       this.ctx.fill()
     }
+  }
+
+  /**
+   * We can improve drawing performance if the user sets the color
+   */
+  private batchDraw(particles: Particle[]) {
+    this.updateDrawStyle(this.color)
+
+    this.ctx.beginPath()
+
+    particles.forEach(p => {
+      if (this.particleGap <= 1) {
+        // When the gap is less than 1, we can replace the circle with a rectangle
+        this.ctx.rect(p.x - p.r, p.y - p.r, p.r * 2, p.r * 2)
+      } else {
+        this.ctx.roundRect(p.x - p.r, p.y - p.r, p.r * 2, p.r * 2, p.r)
+      }
+    })
+
+    this.ctx.fill()
   }
 }
