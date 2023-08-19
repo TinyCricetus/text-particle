@@ -70,7 +70,10 @@ You can get more details from the sample:
 
 ```typescript
 // code
-import { ImageParticle, TextParticle } from 'text-particle'
+import './index.css'
+
+// To make this work, you need to 🧵run build in '../package.json' first
+import { ImageParticle, TextParticle } from '../dist/index'
 
 function run() {
   runExample_1()
@@ -83,8 +86,11 @@ function runExample_1() {
     const particleEffect = new TextParticle(root, {
       source: 'Particle',
       // Custom font need to set in css '@font-face' first 
-      font: 'bold 200px custom',
+      font: 'bold 200px lai',
+      // Set a color to improve particle performance
+      // If you want the original color of the image, set this option to an empty string
       color: '#F1F0E8',
+      textAlign: 'center',
       particleGap: 8,
       particleRadius: 2,
       showMouseCircle: true,
@@ -95,22 +101,22 @@ function runExample_1() {
 
     const text = ['Genshin', 'Impact', 'Honkai', 'Paimon', 'Keqing', 'Klee']
     let index = 0
-
     const runSwitch = () => {
       particleEffect.transitionTo(text[index % text.length], 2000)
       index++
 
       setTimeout(() => {
         runSwitch()
-      }, 4000)
+      }, 6000)
     }
 
-    runSwitch()
+    setTimeout(() => {
+      runSwitch()
+    }, 4000)
   }
 }
 
 function runExample_2() {
-  // image url
   const images = ['']
 
   const root = document.getElementById('container_2')
@@ -121,11 +127,11 @@ function runExample_2() {
   const particleEffect = new ImageParticle(root, {
     source: images[0],
     // Set a color to improve particle performance
-    // If you want the original color of the image, ignore it
-    // Note: The performance of drawing without setting a uniform color will be lower
-    color: '#F1F0E8',
-    particleGap: 4,
-    particleRadius: 2,
+    // If you want the original color of the image, set this option to an empty string
+    color: '#ffffff',
+    autoFit: true,
+    particleGap: 2,
+    particleRadius: 1,
     showMouseCircle: false,
     enableContinuousEasing: false,
   })
@@ -145,7 +151,7 @@ function runExample_2() {
   }
 
   setTimeout(() => {
-    runSwitch()
+    // runSwitch()
   }, delay)
 }
 

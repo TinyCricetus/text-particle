@@ -61,7 +61,9 @@ export class TextParticle extends ParticleEffect {
     
     ctx.fillText(source, Math.floor(x), Math.floor(y))
 
-    const tempImageData = ctx.getImageData(0, 0, width, height)
-    return Particle.from(tempImageData, this.particleGap, this.particleRadius)
+    const drawWidth = this.width || width
+    const drawHeight = this.height || height
+    const tempImageData = ctx.getImageData(0, 0, drawWidth, drawHeight)
+    return Particle.from(tempImageData, this.particleGap, this.particleRadius, this.pixelFilter)
   }
 }

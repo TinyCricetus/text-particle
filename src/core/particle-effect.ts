@@ -1,11 +1,20 @@
-import { Particle } from "./particle"
+import { FilterRGBA, Particle } from "./particle"
 import { distance, ease } from "./utils"
 
 export interface ParticleConfig {
   source: string
 
+  /**
+   * The particle draw width
+   */
   width?: number
+  /**
+   * The particle draw height
+   */
   height?: number
+
+  offsetX?: number
+  offsetY?: number
 
   /**
    * Control Particle Radius
@@ -35,6 +44,8 @@ export interface ParticleConfig {
    */
   showMouseCircle?: boolean
   enableContinuousEasing?: boolean
+
+  pixelFilter?: FilterRGBA
 }
 
 export type ParticleEffectRoot = HTMLElement | HTMLCanvasElement
@@ -65,16 +76,22 @@ export abstract class ParticleEffect {
 
   protected mouseParticle: Particle | null = null
 
+  protected pixelFilter?: FilterRGBA
+  protected width?: number
+  protected height?: number
+  protected offsetX = 0
+  protected offsetY = 0
+
   protected constructor(root: ParticleEffectRoot, config: ParticleConfig) {
     if (root instanceof HTMLElement) {
       root.appendChild(this.canvas)
     } else {
       this.canvas = root
     }
-    
+
     const { clientHeight, clientWidth } = root
-    this.canvas.width = config.width || clientWidth
-    this.canvas.height = config.height || clientHeight
+    this.canvas.width = clientWidth
+    this.canvas.height = clientHeight
 
     const canvas2dCtx = this.canvas.getContext('2d')
     if (!canvas2dCtx) {
@@ -102,6 +119,12 @@ export abstract class ParticleEffect {
     this.isContinuousEasing = config.enableContinuousEasing ?? this.isContinuousEasing
     this.showMouseCircle = config.showMouseCircle ?? this.showMouseCircle
     this.moveProportionPerFrame = config.moveProportionPerFrame ?? this.moveProportionPerFrame
+
+    this.pixelFilter = config.pixelFilter ?? this.pixelFilter
+    this.width = config.width ?? this.width
+    this.height = config.height ?? this.height
+    this.offsetX = config.offsetX ?? this.offsetX
+    this.offsetY = config.offsetY ?? this.offsetY
 
     if (this.showMouseCircle) {
       this.enableMouseListener()
@@ -310,8 +333,8 @@ export abstract class ParticleEffect {
     this.ctx.beginPath()
 
     particles.forEach(p => {
-      if (this.particleGap <= 1) {
-        // When the gap is less than 1, we can replace the circle with a rectangle
+      if (this.particleRadius <= 1) {
+        // When the particle radius is less than 1, we can replace the circle with a rectangle
         this.ctx.rect(p.x, p.y, p.r * 2, p.r * 2)
       } else {
         this.ctx.roundRect(p.x, p.y, p.r * 2, p.r * 2, p.r)

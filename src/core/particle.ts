@@ -1,7 +1,17 @@
 import { isApproximateEqual } from "./utils"
 
+export interface FilterRGBA {
+  (r: number, g: number, b: number, a: number): boolean
+}
+
+function filterRGBA(r: number, g: number, b: number, a: number) {
+  return (r + b + g) > 225 && a > 100
+}
+
 export class Particle {
-  static from(imageData: ImageData, gap = 1, radius = 1) {
+  static from(imageData: ImageData, gap = 1, radius = 1, f?: FilterRGBA) {
+    const filter = f || filterRGBA
+
     const { data, width, height } = imageData
     const result: Particle[] = []
 
@@ -19,7 +29,7 @@ export class Particle {
         b = data[index + 2]
         a = data[index + 3]
 
-        if (r > 125 && g > 125 && b > 125 && a > 125) {
+        if (filter(r, g, b, a)) {
           const color = `rgba(${r}, ${g}, ${b}, ${a})`
           result.push(Particle.create(j, i, radius, color))
         }

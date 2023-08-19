@@ -5,9 +5,21 @@ import {
   ParticleEffectRoot
 } from "../core/particle-effect"
 
+export interface ImageParticleConfig extends ParticleConfig {
+  autoFit?: boolean
+}
+
 export class ImageParticle extends ParticleEffect {
-  constructor(root: ParticleEffectRoot, config: ParticleConfig) {
+  private autoFit = false
+
+  constructor(root: ParticleEffectRoot, config: ImageParticleConfig) {
     super(root, config)
+    this.applyConfig(config)
+  }
+
+  override applyConfig(config: Partial<ImageParticleConfig>) {
+    super.applyConfig(config)
+    this.autoFit = config.autoFit ?? this.autoFit
   }
 
   override async generateParticles(source: string) {
@@ -33,16 +45,35 @@ export class ImageParticle extends ParticleEffect {
     // Need to grayscale, but not yet
 
     const { width: imageWidth, height: imageHeight } = image
-    const scale = imageWidth / width
-    image.width = width
-    image.height = Math.floor(imageHeight / scale)
+
+    let drawWidth = this.width || imageWidth
+    let drawHeight = this.height || imageHeight
+    let offsetX = this.offsetX
+    let offsetY = this.offsetY
+
+    if (this.autoFit) {
+      let scale = 1
+      if (height < width) {
+        scale = height / imageHeight
+      } else {
+        scale = width / imageWidth
+      }
+
+      const scaleWidth = Math.floor(imageWidth * scale)
+      const scaleHeight = Math.floor(imageHeight * scale)
+
+      offsetX = Math.floor(Math.abs(width - scaleWidth) / 2)
+      offsetY = Math.floor(Math.abs(height - scaleHeight) / 2)
+      console.log(offsetX, offsetY)
+
+      drawWidth = scaleWidth
+      drawHeight = scaleHeight
+    }
 
     const ctx = tempCanvas.getContext('2d')!
-
-    ctx.fillStyle = '#ffffff'
-    ctx.drawImage(image, 0, 0)
+    ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight)
 
     const tempImageData = ctx.getImageData(0, 0, width, height)
-    return Particle.from(tempImageData, this.particleGap, this.particleRadius)
+    return Particle.from(tempImageData, this.particleGap, this.particleRadius, this.pixelFilter)
   }
 }
