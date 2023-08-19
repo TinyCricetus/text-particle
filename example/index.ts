@@ -63,12 +63,12 @@ function runExample_2() {
     source: images[0],
     // Set a color to improve particle performance
     // If you want the original color of the image, set this option to an empty string
-    color: '#ffffff',
+    // color: '#ffffff',
     autoFit: true,
-    particleGap: 2,
-    particleRadius: 1,
-    showMouseCircle: false,
-    enableContinuousEasing: false,
+    particleGap: 4,
+    particleRadius: 3,
+    showMouseCircle: true,
+    enableContinuousEasing: true,
   })
 
   particleEffect.render()
@@ -86,7 +86,7 @@ function runExample_2() {
   }
 
   setTimeout(() => {
-    // runSwitch()
+    runSwitch()
   }, delay)
 }
 

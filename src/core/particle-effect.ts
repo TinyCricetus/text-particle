@@ -171,8 +171,8 @@ export abstract class ParticleEffect {
     const len = this.particles.length
     newParticles.sort(() => Math.random() > 0.5 ? 1 : -1)
     for (let i = 0; i < len; i++) {
-      const { x, y } = newParticles[i]
-      this.particles[i].updateNext(x, y)
+      const { x, y, r, color } = newParticles[i]
+      this.particles[i].updateNext(x, y, r, color)
     }
 
     // Be sure to record the time here, because the await expression takes time
@@ -203,9 +203,9 @@ export abstract class ParticleEffect {
         })
       }
 
-      if (this.mouseParticle) {
-        this.singleDraw(this.mouseParticle, true)
-      }
+      // if (this.mouseParticle) {
+      //   this.singleDraw(this.mouseParticle, true)
+      // }
 
       requestAnimationFrame(() => {
         _render()

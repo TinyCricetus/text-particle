@@ -5,7 +5,7 @@ export interface FilterRGBA {
 }
 
 function filterRGBA(r: number, g: number, b: number, a: number) {
-  return (r + b + g) > 225 && a > 100
+  return r > 100 && g > 100 && b > 100 && a > 100
 }
 
 export class Particle {
