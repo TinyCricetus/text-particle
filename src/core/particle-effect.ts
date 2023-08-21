@@ -83,10 +83,10 @@ export abstract class ParticleEffect {
   protected offsetY = 0
 
   protected constructor(root: ParticleEffectRoot, config: ParticleConfig) {
-    if (root instanceof HTMLElement) {
-      root.appendChild(this.canvas)
-    } else {
+    if (root instanceof HTMLCanvasElement) {
       this.canvas = root
+    } else {
+      root.appendChild(this.canvas)
     }
 
     const { clientHeight, clientWidth } = root
