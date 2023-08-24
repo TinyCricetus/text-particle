@@ -41,7 +41,7 @@ export class TextParticle extends ParticleEffect {
 
     const ctx = tempCanvas.getContext('2d')!
 
-    ctx.fillStyle = '#ffffff'
+    ctx.fillStyle = this.color || '#FAF0E6'
     ctx.font = this.font
     ctx.textAlign = this.textAlign
     ctx.textBaseline = 'middle'
@@ -53,7 +53,6 @@ export class TextParticle extends ParticleEffect {
     if (this.textAlign === 'center') {
       x = width / 2
     } else if (this.textAlign === 'right') {
-      // const { width: measureWidth } = ctx.measureText(this.source)
       x = width
     } else {
       x = 0

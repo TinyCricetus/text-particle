@@ -3,48 +3,57 @@ import './index.css'
 // To make this work, you need to 🧵run build in '../package.json' first
 import { ImageParticle, TextParticle } from '../dist/index'
 
-function run() {
-  runExample_1()
-  runExample_2()
+main()
+
+function main() {
+  runTextParticle()
+  runImageParticle()
 }
 
-function runExample_1() {
+function runTextParticle() {
+  const text = ['Klee', 'Ganyu', 'Kamizato Ayaka', 'Keqing', 'Paimon', 'Kirara']
+  const color = ['#e75945', '#80b0e1', '#8eb5e6', '#5c50a6', '#f6f6f4', '#8cbcb4']
+
   const root = document.getElementById('container_1')
-  if (root) {
-    const particleEffect = new TextParticle(root, {
-      source: 'Particle',
-      // Custom font need to set in css '@font-face' first 
-      font: 'bold 200px lai',
-      // Set a color to improve particle performance
-      // If you want the original color of the image, set this option to an empty string
-      color: '#F1F0E8',
-      textAlign: 'center',
-      particleGap: 8,
-      particleRadius: 2,
-      showMouseCircle: true,
-      enableContinuousEasing: true,
+  if (!root) {
+    return
+  }
+  root.style.height = '200px'
+
+  const particleEffect = new TextParticle(root, {
+    source: text[0],
+    // Custom font need to set in css '@font-face' first 
+    font: 'bold 200px lai',
+    color: color[0],
+    textAlign: 'center',
+    particleGap: 6,
+    particleRadius: 3,
+    showMouseCircle: true,
+    enableContinuousEasing: true,
+    enableWebGL: true
+  })
+
+  particleEffect.render()
+
+  let index = 1
+  const runSwitch = () => {
+    particleEffect.applyConfig({
+      color: color[index % color.length]
     })
-
-    particleEffect.render()
-
-    const text = ['Genshin', 'Impact', 'Honkai', 'Paimon', 'Keqing', 'Klee']
-    let index = 0
-    const runSwitch = () => {
-      particleEffect.transitionTo(text[index % text.length], 2000)
-      index++
-
-      setTimeout(() => {
-        runSwitch()
-      }, 6000)
-    }
+    particleEffect.transitionTo(text[index % text.length], 6000)
+    index++
 
     setTimeout(() => {
       runSwitch()
-    }, 4000)
+    }, 10000)
   }
+
+  setTimeout(() => {
+    runSwitch()
+  }, 10000)
 }
 
-function runExample_2() {
+function runImageParticle() {
   const images = [
     '/assets/86f28321e6eaa4ab070c1f6cc150d6432795811a.png@1256w_1048h_!web-article-pic.webp',
     '/assets/22e21662b3d7e092cc1761edcb1f9c672670fd7c.png@1256w_1132h_!web-article-pic.webp',
@@ -61,9 +70,6 @@ function runExample_2() {
 
   const particleEffect = new ImageParticle(root, {
     source: images[0],
-    // Set a color to improve particle performance
-    // If you want the original color of the image, set this option to an empty string
-    // color: '#ffffff',
     autoFit: true,
     particleGap: 1,
     particleRadius: 1,
@@ -75,20 +81,16 @@ function runExample_2() {
   particleEffect.render()
 
   let index = 1
-  const delay = 10000
-
   const runSwitch = () => {
     particleEffect.transitionTo(images[index % images.length], 6000)
     index++
 
     setTimeout(() => {
       runSwitch()
-    }, delay)
+    }, 10000)
   }
 
   setTimeout(() => {
-    // runSwitch()
-  }, delay)
+    runSwitch()
+  }, 10000)
 }
-
-run()
