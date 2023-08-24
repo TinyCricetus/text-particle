@@ -1,5 +1,6 @@
 import typescript from 'rollup-plugin-typescript2'
 import { RollupOptions } from 'rollup'
+import { shaderSource } from './rollup-plugin-shader-source'
 
 const config: RollupOptions = {
   input: './index.ts',
@@ -19,9 +20,9 @@ const config: RollupOptions = {
 
   plugins: [
     typescript({
-      tsconfig: './tsconfig.json',
-      exclude: ['rollup.config.ts', 'node_modules']
-    })
+      tsconfig: './tsconfig.json'
+    }),
+    shaderSource(),
   ]
 }
 
