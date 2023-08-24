@@ -4,7 +4,7 @@ import './index.css'
 import { ImageParticle, TextParticle } from '../dist/index'
 
 function run() {
-  // runExample_1()
+  runExample_1()
   runExample_2()
 }
 
@@ -46,9 +46,9 @@ function runExample_1() {
 
 function runExample_2() {
   const images = [
+    '/assets/86f28321e6eaa4ab070c1f6cc150d6432795811a.png@1256w_1048h_!web-article-pic.webp',
     '/assets/22e21662b3d7e092cc1761edcb1f9c672670fd7c.png@1256w_1132h_!web-article-pic.webp',
     '/assets/0d49ea33e131f9083c17c577e9b9657c63ae2e8c.png@1256w_1032h_!web-article-pic.webp',
-    '/assets/86f28321e6eaa4ab070c1f6cc150d6432795811a.png@1256w_1048h_!web-article-pic.webp',
     '/assets/80793ec461c1b53cbd3abfd4561d51d4c9e6d195.png@1256w_1142h_!web-article-pic.webp',
     '/assets/c3bd3f3e8fff5a7654e9abd031511d0cddbf9024.png@!web-article-pic.webp',
     '/assets/d19d1a28e402fbaa9f6714e767ef9a17b74a7695.png@1256w_894h_!web-article-pic.webp'
@@ -68,7 +68,7 @@ function runExample_2() {
     particleGap: 1,
     particleRadius: 1,
     showMouseCircle: true,
-    enableContinuousEasing: false,
+    enableContinuousEasing: true,
     enableWebGL: true
   })
 
@@ -87,7 +87,7 @@ function runExample_2() {
   }
 
   setTimeout(() => {
-    runSwitch()
+    // runSwitch()
   }, delay)
 }
 

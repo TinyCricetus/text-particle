@@ -182,6 +182,11 @@ export abstract class ParticleEffect {
 
       this.particles = this.particles.concat(extra)
     } else if (oldLen - newLen > 0) {
+      // let index = 0
+      // while() {
+        
+      //   index += 2
+      // }
       this.particles.splice(0, oldLen - newLen)
     }
 
@@ -202,7 +207,7 @@ export abstract class ParticleEffect {
 
     const _render = () => {
       const costTime = Date.now() - this.lastAnimationBeginTime
-
+      
       this.particles.forEach(p => {
         if (this.isContinuousEasing) {
           this.updateParticleContinuous(p)
@@ -210,7 +215,7 @@ export abstract class ParticleEffect {
           this.updateParticleEase(costTime, p)
         }
       })
-
+      
       if (this.enableWebGL) {
         this.drawWithWebGL()
       } else {
@@ -310,17 +315,25 @@ export abstract class ParticleEffect {
     if (!gl || !program) {
       return
     }
+    
+    const len = particles.length
+    const _positions = new Array(len * 2)
+    const _colors = new Array(len * 4)
 
-    const _positions: number[] = []
-    const _colors: number[] = []
-    particles.forEach(p => {
-      _positions.push(p.x, p.y)
-      _colors.push(...p.c)
+    let pIndex = 0
+    let cIndex = 0
+    particles.forEach((p) => {
+      _positions[pIndex++] = p.x
+      _positions[pIndex++] = p.y
+
+      for (let i = 0; i < p.c.length; i++) {
+        _colors[cIndex++] = p.c[i]
+      }
     })
-
+    
     const positions = new Float32Array(_positions)
     const colors = new Float32Array(_colors)
-
+    
     if (this.pointsBuffer) {
       setAttributeBuffer(gl, {
         buffer: this.pointsBuffer,
@@ -328,7 +341,7 @@ export abstract class ParticleEffect {
         readSize: 2
       }, positions)
     }
-
+    
     if (this.colorBuffer) {
       setAttributeBuffer(gl, {
         buffer: this.colorBuffer,
@@ -336,7 +349,7 @@ export abstract class ParticleEffect {
         readSize: 4
       }, colors)
     }
-
+    
     gl.drawArrays(gl.POINTS, 0, particles.length)
   }
 
@@ -406,7 +419,10 @@ export abstract class ParticleEffect {
       if (dis < r + 10) {
         const A = Math.atan2(p.y - y, p.x - x)
 
-        const reverseV = 2 * (r / dis)
+        let reverseV = 2 * (r / dis)
+        reverseV = Math.min(1000, reverseV)
+        reverseV = Math.max(1, reverseV)
+
         const reverseVx = Math.cos(A) * reverseV
         const reverseVy = Math.sin(A) * reverseV
 
