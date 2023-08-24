@@ -1,6 +1,6 @@
 # TextParticle
 
-Create particle effects for text.
+Create particle transition effects for text and image.
 
 ## Preview
 
@@ -30,11 +30,13 @@ The library contains two particle effects:
 - TextParticle
 - ImageParticle
 
+> If you want to render particles with high performance, 
+> enable the configuration option **enableWebGL**.
+
 
 You can get more details from the sample:
 
 ```html
-<!-- html -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -42,27 +44,17 @@ You can get more details from the sample:
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TextParticle Demo</title>
-  <style>
-    .container {
-      width: 1200px;
-      height: 600px;
-      margin: auto;
-    }
-
-    body {
-      background-color: black;
-    }
-
-    @font-face {
-      font-family: "custom";
-      src: url(./assets/custom.ttf);
-    }
-  </style>
 </head>
 
 <body>
-  <div id="container_1" class="container"></div>
-  <div id="container_2" class="container"></div>
+  <div id="container_1" class="container_1"></div>
+  <div id="container_2" class="container_1"></div>
+  <div id="container_3" class="container_1"></div>
+  <div id="container_4" class="container_1"></div>
+  <div class="display-box">
+    <div id="display" class="display"></div>
+    <div id="display2" class="display"></div>
+  </div>
 </body>
 
 </html>
@@ -75,49 +67,57 @@ import './index.css'
 // To make this work, you need to 🧵run build in '../package.json' first
 import { ImageParticle, TextParticle } from '../dist/index'
 
-function run() {
-  runExample_1()
-  runExample_2()
+main()
+
+function main() {
+  runTextParticle()
+  runImageParticle()
 }
 
-function runExample_1() {
+function runTextParticle() {
+  const text = ['Klee', 'Ganyu']
+  const color = ['#e75945', '#80b0e1']
+
   const root = document.getElementById('container_1')
-  if (root) {
-    const particleEffect = new TextParticle(root, {
-      source: 'Particle',
-      // Custom font need to set in css '@font-face' first 
-      font: 'bold 200px lai',
-      // Set a color to improve particle performance
-      // If you want the original color of the image, set this option to an empty string
-      color: '#F1F0E8',
-      textAlign: 'center',
-      particleGap: 8,
-      particleRadius: 2,
-      showMouseCircle: true,
-      enableContinuousEasing: true,
-    })
-
-    particleEffect.render()
-
-    const text = ['Genshin', 'Impact', 'Honkai', 'Paimon', 'Keqing', 'Klee']
-    let index = 0
-    const runSwitch = () => {
-      particleEffect.transitionTo(text[index % text.length], 2000)
-      index++
-
-      setTimeout(() => {
-        runSwitch()
-      }, 6000)
-    }
-
-    setTimeout(() => {
-      runSwitch()
-    }, 4000)
+  if (!root) {
+    return
   }
+  root.style.height = '200px'
+
+  const particleEffect = new TextParticle(root, {
+    source: text[0],
+    color: color[0],
+    // Custom font need to set in css '@font-face' first 
+    font: 'bold 200px lai',
+    textAlign: 'center',
+    particleGap: 6,
+    particleRadius: 3,
+    showMouseCircle: true,
+    enableContinuousEasing: true,
+    enableWebGL: true
+  })
+
+  particleEffect.render()
+
+  let index = 1
+  const transform = () => {
+    setTimeout(() => {
+      particleEffect.applyConfig({ color: color[index % color.length] })
+      particleEffect.transitionTo(text[index % text.length], 6000)
+      index++
+      
+      transform()
+    }, 10000)
+  }
+
+  transform()
 }
 
-function runExample_2() {
-  const images = ['']
+function runImageParticle() {
+  const images = [
+    '/assets/86f28321e6eaa4ab070c1f6cc150d6432795811a.png@1256w_1048h_!web-article-pic.webp',
+    '/assets/22e21662b3d7e092cc1761edcb1f9c672670fd7c.png@1256w_1132h_!web-article-pic.webp'
+  ]
 
   const root = document.getElementById('container_2')
   if (!root) {
@@ -126,35 +126,27 @@ function runExample_2() {
 
   const particleEffect = new ImageParticle(root, {
     source: images[0],
-    // Set a color to improve particle performance
-    // If you want the original color of the image, set this option to an empty string
-    color: '#ffffff',
     autoFit: true,
-    particleGap: 2,
+    particleGap: 1,
     particleRadius: 1,
-    showMouseCircle: false,
-    enableContinuousEasing: false,
+    showMouseCircle: true,
+    enableContinuousEasing: true,
+    enableWebGL: true
   })
 
   particleEffect.render()
 
   let index = 1
-  const delay = 8000
-
-  const runSwitch = () => {
-    particleEffect.transitionTo(images[index % images.length], 6000)
-    index++
-
+  const transform = () => {
     setTimeout(() => {
-      runSwitch()
-    }, delay)
+      particleEffect.transitionTo(images[index % images.length], 6000)
+      index++
+
+      transform()
+    }, 10000)
   }
 
-  setTimeout(() => {
-    // runSwitch()
-  }, delay)
+  transform()
 }
-
-run()
 ```
 

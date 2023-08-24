@@ -36,21 +36,17 @@ function runTextParticle() {
   particleEffect.render()
 
   let index = 1
-  const runSwitch = () => {
-    particleEffect.applyConfig({
-      color: color[index % color.length]
-    })
-    particleEffect.transitionTo(text[index % text.length], 6000)
-    index++
-
+  const transform = () => {
     setTimeout(() => {
-      runSwitch()
+      particleEffect.applyConfig({ color: color[index % color.length] })
+      particleEffect.transitionTo(text[index % text.length], 6000)
+      index++
+      
+      transform()
     }, 10000)
   }
 
-  setTimeout(() => {
-    runSwitch()
-  }, 10000)
+  transform()
 }
 
 function runImageParticle() {
@@ -81,16 +77,14 @@ function runImageParticle() {
   particleEffect.render()
 
   let index = 1
-  const runSwitch = () => {
-    particleEffect.transitionTo(images[index % images.length], 6000)
-    index++
-
+  const transform = () => {
     setTimeout(() => {
-      runSwitch()
+      particleEffect.transitionTo(images[index % images.length], 6000)
+      index++
+
+      transform()
     }, 10000)
   }
 
-  setTimeout(() => {
-    runSwitch()
-  }, 10000)
+  transform()
 }
