@@ -5,11 +5,14 @@ export interface FilterRGBA {
 }
 
 function filterRGBA(r: number, g: number, b: number, a: number) {
-  return r > 100 && g > 100 && b > 100 && a > 100
+  return (r + g + b) > 0 && a > 10
 }
 
 export class Particle {
   static from(imageData: ImageData, gap = 1, radius = 1, f?: FilterRGBA) {
+    gap = Math.max(1, gap)
+    radius = Math.max(1, radius)
+
     const filter = f || filterRGBA
 
     const { data, width, height } = imageData
@@ -30,8 +33,7 @@ export class Particle {
         a = data[index + 3]
 
         if (filter(r, g, b, a)) {
-          const color = `rgba(${r}, ${g}, ${b}, ${a})`
-          result.push(Particle.create(j, i, radius, color))
+          result.push(Particle.create(j, i, radius, [r, g, b, a]))
         }
       }
     }
@@ -39,7 +41,7 @@ export class Particle {
     return result
   }
 
-  static create(x: number, y: number, r = 1, c = '#000000') {
+  static create(x: number, y: number, r = 1, c = [0, 0, 0, 1]) {
     return new Particle(x, y, r, c)
   }
 
@@ -67,6 +69,11 @@ export class Particle {
     return this._nextX === this.x && this._nextY === this.y
   }
 
+  get color() {
+    const [r, g, b, a] = this.c
+    return `rgba(${r}, ${g}, ${b}, ${a})`
+  }
+
   private _nextX: number
   private _nextY: number
   private _preX: number
@@ -76,7 +83,7 @@ export class Particle {
     public x: number,
     public y: number,
     public r: number,
-    public color: string
+    public c: number[]
   ) {
     this._nextX = this._preX = this.x
     this._nextY = this._preY = this.y
@@ -86,7 +93,7 @@ export class Particle {
     return Particle.create(this.x, this.y, this.r)
   }
 
-  updateNext(x: number, y: number, r = this.r, c = this.color) {
+  updateNext(x: number, y: number, r = this.r, c = this.c) {
     this._preX = this.x
     this._preY = this.y
 
@@ -94,7 +101,7 @@ export class Particle {
     this._nextY = y
 
     this.r = r
-    this.color = c
+    this.c = c
   }
 
   update(x: number = this._nextX, y: number = this._nextY) {

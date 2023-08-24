@@ -64,7 +64,6 @@ export class ImageParticle extends ParticleEffect {
 
       offsetX = Math.floor(Math.abs(width - scaleWidth) / 2)
       offsetY = Math.floor(Math.abs(height - scaleHeight) / 2)
-      console.log(offsetX, offsetY)
 
       drawWidth = scaleWidth
       drawHeight = scaleHeight

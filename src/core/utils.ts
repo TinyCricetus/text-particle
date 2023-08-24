@@ -1,3 +1,10 @@
+export function invariant(value: any, msg = 'debugger point'): asserts value {
+  if (typeof value !== 'boolean' && !value) {
+    console.error(msg)
+    throw new Error('Unexpected empty value.')
+  }
+}
+
 export function distance(x1: number, y1: number, x2: number, y2: number) {
   const x = Math.abs(x1 - x2)
   const y = Math.abs(y1 - y2)

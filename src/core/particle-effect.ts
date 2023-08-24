@@ -1,5 +1,6 @@
 import { FilterRGBA, Particle } from "./particle"
-import { distance, ease } from "./utils"
+import { distance, ease, invariant } from "./utils"
+import { createProgram, createShader, setAttributeBuffer } from "./webgl"
 
 export interface ParticleConfig {
   source: string
@@ -45,6 +46,8 @@ export interface ParticleConfig {
   showMouseCircle?: boolean
   enableContinuousEasing?: boolean
 
+  enableWebGL?: boolean
+
   pixelFilter?: FilterRGBA
 }
 
@@ -56,18 +59,24 @@ export abstract class ParticleEffect {
   }
 
   protected canvas: HTMLCanvasElement = document.createElement('canvas')
-  protected ctx: CanvasRenderingContext2D
   protected isRendering = false
   protected unBindMouseEventCallback: (() => void) | null = null
+
+  protected ctx?: CanvasRenderingContext2D
+
+  protected gl?: WebGLRenderingContext
+  protected program?: WebGLProgram
+  protected pointsBuffer?: WebGLBuffer
+  protected colorBuffer?: WebGLBuffer
 
   protected source = ''
   protected color = ''
   protected particleRadius = 1
   protected particleGap = 2
-
   protected moveProportionPerFrame = 30
   protected isContinuousEasing = false
   protected showMouseCircle = false
+  protected enableWebGL = false
 
   protected lastAnimationBeginTime = 0
   protected animationTime = 2000
@@ -93,13 +102,19 @@ export abstract class ParticleEffect {
     this.canvas.width = clientWidth
     this.canvas.height = clientHeight
 
-    const canvas2dCtx = this.canvas.getContext('2d')
-    if (!canvas2dCtx) {
-      throw new Error('not found canvas 2d context')
-    }
-
-    this.ctx = canvas2dCtx
     this.applyConfig(config)
+
+    if (this.enableWebGL) {
+      const canvasGl = this.canvas.getContext('webgl')
+      invariant(canvasGl)
+
+      this.gl = canvasGl
+      this.initWebGL()
+    } else {
+      const canvasCtx = this.canvas.getContext('2d')
+      invariant(canvasCtx, 'not found canvas 2d context')
+      this.ctx = canvasCtx
+    }
   }
 
   destroy() {
@@ -107,6 +122,7 @@ export abstract class ParticleEffect {
   }
 
   applyConfig(config: Partial<ParticleConfig>) {
+    this.enableWebGL = config.enableWebGL ?? this.enableWebGL
     this.source = config.source || this.source
     this.color = config.color || this.color
 
@@ -153,6 +169,7 @@ export abstract class ParticleEffect {
     this.animationTime = time
 
     const newParticles = await this.generateParticles(newSource)
+    console.log('particle count: ', newParticles.length)
 
     const oldLen = this.particles.length
     const newLen = newParticles.length
@@ -171,8 +188,8 @@ export abstract class ParticleEffect {
     const len = this.particles.length
     newParticles.sort(() => Math.random() > 0.5 ? 1 : -1)
     for (let i = 0; i < len; i++) {
-      const { x, y, r, color } = newParticles[i]
-      this.particles[i].updateNext(x, y, r, color)
+      const { x, y, r, c } = newParticles[i]
+      this.particles[i].updateNext(x, y, r, c)
     }
 
     // Be sure to record the time here, because the await expression takes time
@@ -185,7 +202,6 @@ export abstract class ParticleEffect {
 
     const _render = () => {
       const costTime = Date.now() - this.lastAnimationBeginTime
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
       this.particles.forEach(p => {
         if (this.isContinuousEasing) {
@@ -195,17 +211,11 @@ export abstract class ParticleEffect {
         }
       })
 
-      if (this.canBatchDraw) {
-        this.batchDraw(this.particles)
+      if (this.enableWebGL) {
+        this.drawWithWebGL()
       } else {
-        this.particles.forEach(p => {
-          this.singleDraw(p)
-        })
+        this.drawWith2D()
       }
-
-      // if (this.mouseParticle) {
-      //   this.singleDraw(this.mouseParticle, true)
-      // }
 
       requestAnimationFrame(() => {
         _render()
@@ -222,6 +232,114 @@ export abstract class ParticleEffect {
     throw new Error('generateParticles need to be implemented')
   }
 
+  private drawWith2D() {
+    const { ctx, particles } = this
+    if (!ctx) {
+      return
+    }
+
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
+    if (this.canBatchDraw) {
+      this.batchDraw(ctx, particles)
+    } else {
+      particles.forEach(p => {
+        this.singleDraw(ctx, p)
+      })
+    }
+  }
+
+  private initWebGL() {
+    const gl = this.gl
+    if (!gl) {
+      return
+    }
+
+    const vsSource = /*glsl*/ `
+      attribute vec2 a_position;
+      attribute vec4 a_color;
+
+      varying vec4 v_color;
+
+      uniform vec2 u_resolution;
+      uniform float u_point_size;
+
+      void main() {
+        vec2 clipSpace = a_position / u_resolution * 2.0 - 1.0;
+      
+        gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+        gl_PointSize = u_point_size;
+        v_color = a_color / vec4(255.0, 255.0, 255.0, 255.0);
+      }
+    `
+
+    const fsSource = /*glsl*/ `
+      precision mediump float;
+
+      varying vec4 v_color;
+      
+      void main() {
+        gl_FragColor = v_color;
+      }
+    `
+    const vs = createShader(gl, gl.VERTEX_SHADER, vsSource)
+    const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource)
+    invariant(vs)
+    invariant(fs)
+
+    this.program = createProgram(gl, vs, fs) || undefined
+    invariant(this.program)
+
+    gl.useProgram(this.program)
+
+    this.pointsBuffer = gl.createBuffer() || undefined
+    this.colorBuffer = gl.createBuffer() || undefined
+
+    if (this.program) {
+      const resolutionLocation = gl.getUniformLocation(this.program, 'u_resolution')
+      gl.uniform2f(resolutionLocation, this.canvas.width, this.canvas.height)
+      const pointSizeLocation = gl.getUniformLocation(this.program, 'u_point_size')
+      gl.uniform1f(pointSizeLocation, this.particleRadius)
+    }
+
+    gl.viewport(0, 0, this.canvas.width, this.canvas.height)
+  }
+
+  private drawWithWebGL() {
+    const { program, gl, particles } = this
+    if (!gl || !program) {
+      return
+    }
+
+    const _positions: number[] = []
+    const _colors: number[] = []
+    particles.forEach(p => {
+      _positions.push(p.x, p.y)
+      _colors.push(...p.c)
+    })
+
+    const positions = new Float32Array(_positions)
+    const colors = new Float32Array(_colors)
+
+    if (this.pointsBuffer) {
+      setAttributeBuffer(gl, {
+        buffer: this.pointsBuffer,
+        location: gl.getAttribLocation(program, 'a_position'),
+        readSize: 2
+      }, positions)
+    }
+
+    if (this.colorBuffer) {
+      setAttributeBuffer(gl, {
+        buffer: this.colorBuffer,
+        location: gl.getAttribLocation(program, 'a_color'),
+        readSize: 4
+      }, colors)
+    }
+
+    gl.drawArrays(gl.POINTS, 0, particles.length)
+  }
+
   private async updateParticles(source?: string) {
     this.source = source || this.source
     if (!this.source) {
@@ -229,12 +347,15 @@ export abstract class ParticleEffect {
     }
 
     this.particles = await this.generateParticles(this.source)
+    console.log('particle count: ', this.particles.length)
+
+    return this.particles
   }
 
   private enableMouseListener() {
     const onMousemove = (event: MouseEvent) => {
       if (!this.mouseParticle) {
-        this.mouseParticle = Particle.create(-100, -100, 20, '#ffffff')
+        this.mouseParticle = Particle.create(-100, -100, 20, [255, 255, 255, 255])
       }
 
       // to update unstoppable particle
@@ -298,49 +419,49 @@ export abstract class ParticleEffect {
     p.update(p.x + vx, p.y + vy)
   }
 
-  private updateDrawStyle(color: string) {
-    if (this.ctx.fillStyle !== color) {
-      this.ctx.fillStyle = color
+  private updateDrawStyle(ctx: CanvasRenderingContext2D, color: string) {
+    if (ctx.fillStyle !== color) {
+      ctx.fillStyle = color
     }
 
-    if (this.ctx.strokeStyle !== color) {
-      this.ctx.strokeStyle = color
+    if (ctx.strokeStyle !== color) {
+      ctx.strokeStyle = color
     }
   }
 
-  private singleDraw(p: Particle, stroke = false) {
-    let { x, y, r, color } = p
+  private singleDraw(ctx: CanvasRenderingContext2D, p: Particle, stroke = false) {
+    const { x, y, r, color } = p
 
-    this.updateDrawStyle(color)
+    this.updateDrawStyle(ctx, color)
 
-    this.ctx.moveTo(x, y)
-    this.ctx.beginPath()
-    this.ctx.arc(x, y, r, 0, Math.PI * 2)
+    ctx.moveTo(x, y)
+    ctx.beginPath()
+    ctx.arc(x, y, r, 0, Math.PI * 2)
 
     if (stroke) {
-      this.ctx.stroke()
+      ctx.stroke()
     } else {
-      this.ctx.fill()
+      ctx.fill()
     }
   }
 
   /**
    * We can improve drawing performance if the user sets the color
    */
-  private batchDraw(particles: Particle[]) {
-    this.updateDrawStyle(this.color)
+  private batchDraw(ctx: CanvasRenderingContext2D, particles: Particle[]) {
+    this.updateDrawStyle(ctx, this.color)
 
-    this.ctx.beginPath()
+    ctx.beginPath()
 
     particles.forEach(p => {
       if (this.particleRadius <= 1) {
         // When the particle radius is less than 1, we can replace the circle with a rectangle
-        this.ctx.rect(p.x, p.y, p.r * 2, p.r * 2)
+        ctx.rect(p.x, p.y, p.r * 2, p.r * 2)
       } else {
-        this.ctx.roundRect(p.x, p.y, p.r * 2, p.r * 2, p.r)
+        ctx.roundRect(p.x, p.y, p.r * 2, p.r * 2, p.r)
       }
     })
 
-    this.ctx.fill()
+    ctx.fill()
   }
 }

@@ -4,7 +4,7 @@ import './index.css'
 import { ImageParticle, TextParticle } from '../dist/index'
 
 function run() {
-  runExample_1()
+  // runExample_1()
   runExample_2()
 }
 
@@ -65,16 +65,17 @@ function runExample_2() {
     // If you want the original color of the image, set this option to an empty string
     // color: '#ffffff',
     autoFit: true,
-    particleGap: 4,
-    particleRadius: 3,
+    particleGap: 1,
+    particleRadius: 1,
     showMouseCircle: true,
-    enableContinuousEasing: true,
+    enableContinuousEasing: false,
+    enableWebGL: true
   })
 
   particleEffect.render()
 
   let index = 1
-  const delay = 8000
+  const delay = 10000
 
   const runSwitch = () => {
     particleEffect.transitionTo(images[index % images.length], 6000)
