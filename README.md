@@ -1,6 +1,6 @@
 # TextParticle
 
-Create particle transition effects for text and image.
+Create high performance particle transition effects for text and image.
 
 ## Preview
 
@@ -34,8 +34,7 @@ The library contains two particle effects:
 - TextParticle
 - ImageParticle
 
-> If you want to render particles with high performance, 
-> enable the configuration option **enableWebGL**.
+> If you want to render particles with high performance, enable the configuration option **enableWebGL**.
 
 
 You can get more details from the sample:
@@ -106,10 +105,13 @@ function runTextParticle() {
   let index = 1
   const transform = () => {
     setTimeout(() => {
-      particleEffect.applyConfig({ color: color[index % color.length] })
-      particleEffect.transitionTo(text[index % text.length], 6000)
+      particleEffect.transitionTo(
+        text[index % text.length],
+        6000,
+        { color: color[index % color.length] }
+      )
       index++
-      
+
       transform()
     }, 10000)
   }
