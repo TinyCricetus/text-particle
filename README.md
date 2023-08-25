@@ -4,6 +4,10 @@ Create particle transition effects for text and image.
 
 ## Preview
 
+![preview_gif_1](https://github.com/TinyCricetus/text-particle/blob/main/preview/preview_1.gif)
+
+![preview_gif_2](https://github.com/TinyCricetus/text-particle/blob/main/preview/preview_2.gif)
+
 ![preview_1](https://github.com/TinyCricetus/text-particle/blob/main/preview/image_1.png)
 
 ![preview_2](https://github.com/TinyCricetus/text-particle/blob/main/preview/image_2.png)

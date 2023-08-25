@@ -3,7 +3,7 @@ import {
   ParticleConfig,
   ParticleEffect,
   ParticleEffectRoot
-} from "../core/particle-effect"
+} from "../core/effect"
 
 export interface ImageParticleConfig extends ParticleConfig {
   autoFit?: boolean
