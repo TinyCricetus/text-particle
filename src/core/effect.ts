@@ -171,7 +171,7 @@ export abstract class ParticleEffect {
     this.animationTime = time
 
     const newParticles = await this.generateParticles(newSource)
-    console.log('particle count: ', newParticles.length)
+    // console.log('particle count: ', newParticles.length)
 
     const oldLen = this.particles.length
     const newLen = newParticles.length
@@ -199,6 +199,18 @@ export abstract class ParticleEffect {
   }
 
   async render(source?: string) {
+    const gl = this.gl
+    if (gl) {
+      if (this.program) {
+        const resolutionLocation = gl.getUniformLocation(this.program, 'u_resolution')
+        gl.uniform2f(resolutionLocation, this.canvas.width, this.canvas.height)
+        const pointSizeLocation = gl.getUniformLocation(this.program, 'u_point_size')
+        gl.uniform1f(pointSizeLocation, this.particleRadius)
+      }
+  
+      gl.viewport(0, 0, this.canvas.width, this.canvas.height)
+    }
+
     // Load particles first
     await this.updateParticles(source)
 
@@ -269,15 +281,6 @@ export abstract class ParticleEffect {
 
     this.pointsBuffer = gl.createBuffer() || undefined
     this.colorBuffer = gl.createBuffer() || undefined
-
-    if (this.program) {
-      const resolutionLocation = gl.getUniformLocation(this.program, 'u_resolution')
-      gl.uniform2f(resolutionLocation, this.canvas.width, this.canvas.height)
-      const pointSizeLocation = gl.getUniformLocation(this.program, 'u_point_size')
-      gl.uniform1f(pointSizeLocation, this.particleRadius)
-    }
-
-    gl.viewport(0, 0, this.canvas.width, this.canvas.height)
   }
 
   private drawWithWebGL() {
