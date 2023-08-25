@@ -38,6 +38,7 @@ export class Particle {
       }
     }
 
+    // console.log('particle count:', result.length)
     return result
   }
 

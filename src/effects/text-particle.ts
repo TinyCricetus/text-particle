@@ -1,9 +1,6 @@
-import { Particle } from "../core/particle"
-import {
-  ParticleConfig,
-  ParticleEffect,
-  ParticleEffectRoot
-} from "../core/effect"
+import { ParticleConfig, ParticleEffect, ParticleEffectRoot } from "../effect"
+import { Particle } from "../particle"
+
 
 export interface TextParticleConfig extends ParticleConfig {
   /**
@@ -20,15 +17,19 @@ export class TextParticle extends ParticleEffect {
   private font = 'bold 60px Arial'
   private textAlign: CanvasTextAlign = 'center'
 
-  constructor(root: ParticleEffectRoot, config: TextParticleConfig) {
+  constructor(root: ParticleEffectRoot, config: Partial<TextParticleConfig>) {
     super(root, config)
-    this.applyConfig(config)
+    this.updateConfig(config)
   }
 
-  override applyConfig(config: Partial<TextParticleConfig>): void {
-    super.applyConfig(config)
-    this.font = config.font || this.font
-    this.textAlign = config.textAlign || this.textAlign
+  updateConfig(config: Partial<TextParticleConfig>) {
+    this.font = config.font ?? this.font
+    this.textAlign = config.textAlign ?? this.textAlign
+  }
+
+  override transitionTo(newSource: string, time = 2000, config: Partial<TextParticleConfig> = {}): Promise<void> {
+    this.updateConfig(config)
+    return super.transitionTo(newSource, time, config)
   }
 
   override async generateParticles(source: string) {
@@ -40,8 +41,9 @@ export class TextParticle extends ParticleEffect {
     // Need to grayscale, but not yet
 
     const ctx = tempCanvas.getContext('2d')!
+    const config = this._config
 
-    ctx.fillStyle = this.color || '#FAF0E6'
+    ctx.fillStyle = config.color || '#FAF0E6'
     ctx.font = this.font
     ctx.textAlign = this.textAlign
     ctx.textBaseline = 'middle'
@@ -57,12 +59,16 @@ export class TextParticle extends ParticleEffect {
     } else {
       x = 0
     }
-    
+
     ctx.fillText(source, Math.floor(x), Math.floor(y))
 
-    const drawWidth = this.width || width
-    const drawHeight = this.height || height
-    const tempImageData = ctx.getImageData(0, 0, drawWidth, drawHeight)
-    return Particle.from(tempImageData, this.particleGap, this.particleRadius, this.pixelFilter)
+    const tempImageData = ctx.getImageData(0, 0, width, height)
+
+    return Particle.from(
+      tempImageData,
+      config.particleGap,
+      config.particleRadius,
+      config.pixelFilter
+    )
   }
 }

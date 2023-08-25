@@ -38,10 +38,13 @@ function runTextParticle() {
   let index = 1
   const transform = () => {
     setTimeout(() => {
-      particleEffect.applyConfig({ color: color[index % color.length] })
-      particleEffect.transitionTo(text[index % text.length], 6000)
+      particleEffect.transitionTo(
+        text[index % text.length],
+        6000,
+        { color: color[index % color.length] }
+      )
       index++
-      
+
       transform()
     }, 10000)
   }
