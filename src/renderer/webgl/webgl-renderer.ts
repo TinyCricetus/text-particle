@@ -130,21 +130,17 @@ export class WebGLRenderer extends Renderer {
     const positions = new Float32Array(_positions)
     const colors = new Float32Array(_colors)
 
-    if (this.pointsBuffer) {
-      setAttributeBuffer(gl, {
-        buffer: this.pointsBuffer,
-        location: gl.getAttribLocation(program, 'a_position'),
-        readSize: 2
-      }, positions)
-    }
+    setAttributeBuffer(gl, {
+      buffer: this.pointsBuffer,
+      location: gl.getAttribLocation(program, 'a_position'),
+      readSize: 2
+    }, positions)
 
-    if (this.colorBuffer) {
-      setAttributeBuffer(gl, {
-        buffer: this.colorBuffer,
-        location: gl.getAttribLocation(program, 'a_color'),
-        readSize: 4
-      }, colors)
-    }
+    setAttributeBuffer(gl, {
+      buffer: this.colorBuffer,
+      location: gl.getAttribLocation(program, 'a_color'),
+      readSize: 4
+    }, colors)
 
     gl.drawArrays(gl.POINTS, 0, particles.length)
   }

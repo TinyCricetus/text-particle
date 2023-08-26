@@ -6,9 +6,6 @@ import { Renderer } from "../renderer"
 export class CanvasRenderer extends Renderer {
   private ctx: CanvasRenderingContext2D
 
-  private particleRadius = 1
-  private color = ''
-
   constructor(
     protected root: HTMLCanvasElement,
     protected config: ParticleConfig
@@ -19,9 +16,6 @@ export class CanvasRenderer extends Renderer {
     invariant(canvasCtx, 'not found canvas 2d context')
 
     this.ctx = canvasCtx
-
-    this.color = this.config.color ?? this.color
-    this.particleRadius = this.config.particleRadius
   }
 
   resize() {}
@@ -29,8 +23,8 @@ export class CanvasRenderer extends Renderer {
   render(particles: Particle[]) {
     this.ctx.clearRect(0, 0, this.root.width, this.root.height)
 
-    if (this.color) {
-      this.batchDraw(particles)
+    if (this.config.color) {
+      this.batchDraw(particles, this.config.color)
     } else {
       this.singleDraw(particles)
     }
@@ -74,14 +68,14 @@ export class CanvasRenderer extends Renderer {
   /**
    * We can improve drawing performance if the user sets the color
    */
-  private batchDraw(particles: Particle[]) {
-    const { ctx, color } = this
+  private batchDraw(particles: Particle[], color: string) {
+    const { ctx } = this
     this.updateDrawStyle(color)
 
     ctx.beginPath()
 
     particles.forEach(p => {
-      if (this.particleRadius <= 1) {
+      if (this.config.particleRadius <= 1) {
         // When the particle radius is less than 1, we can replace the circle with a rectangle
         ctx.rect(p.x, p.y, p.r * 2, p.r * 2)
       } else {

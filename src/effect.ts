@@ -1,5 +1,5 @@
 import { FilterRGBA, Particle } from "./particle"
-import { distance, ease } from "./utils"
+import { distance, ease, useRAF } from "./utils"
 import { Renderer } from "./renderer/renderer"
 import { WebGLRenderer } from "./renderer/webgl/webgl-renderer"
 import { CanvasRenderer } from "./renderer/canvas/canvas-renderer"
@@ -131,7 +131,7 @@ export abstract class ParticleEffect {
    * @param time this option will be disabled if 'enableContinuousEasing' is set to true
    * @returns 
    */
-  async transitionTo(newSource: string, time: number, config: Partial<ParticleConfig>) {
+  async transitionTo(newSource: string, time: number, config: Partial<ParticleConfig> = {}) {
     this._config = mergeConfig(this._config, config)
 
     if (!this.isRendering) {
@@ -161,15 +161,21 @@ export abstract class ParticleEffect {
       }
 
       this.particles = this.particles.concat(extra)
-    } else if (oldLen - newLen > 0) {
+    } else if (oldLen > newLen) {
       this.particles.splice(0, oldLen - newLen)
     }
 
     const len = this.particles.length
     newParticles.sort(() => Math.random() > 0.5 ? 1 : -1)
     for (let i = 0; i < len; i++) {
-      const { x, y, r, c } = newParticles[i]
-      this.particles[i].updateNext(x, y, r, c)
+      const newParticle = newParticles[i]
+
+      this.particles[i].updateNext(
+        newParticle.x,
+        newParticle.y,
+        newParticle.r,
+        newParticle.c
+      )
     }
 
     // Be sure to record the time here, because the await expression takes time
@@ -193,27 +199,21 @@ export abstract class ParticleEffect {
       this.particles = await this.generateParticles(this._config.source)
     }
 
-    const _render = () => {
+    const [render] = useRAF(() => {
       const costTime = Date.now() - this.lastAnimationBeginTime
 
-      this.particles.forEach(p => {
-        if (this._config.enableContinuousEasing) {
-          this.updateParticleContinuous(p)
-        } else {
-          this.updateParticleEase(costTime, p)
-        }
-      })
+      if (this._config.enableContinuousEasing) {
+        this.particles.forEach(p => this.updateParticleContinuous(p))
+      } else {
+        this.particles.forEach(p => this.updateParticleEase(costTime, p))
+      }
 
       this.renderer.render(this.particles)
-
-      requestAnimationFrame(() => {
-        _render()
-      })
-    }
+    })
 
     if (!this.isRendering) {
       this.isRendering = true
-      _render()
+      render()
     }
   }
 

@@ -34,3 +34,20 @@ export function ease(t: number, d: number, s: number, e: number) {
 export function isApproximateEqual(a: number, b: number) {
   return Math.abs(a - b) <= 1.0
 }
+
+export function useRAF(fn: () => void) {
+  let raf = -1
+  const run = () => {
+    fn()
+
+    raf = requestAnimationFrame(() => {
+      run()
+    })
+  }
+
+  const cancel = () => {
+    cancelAnimationFrame(raf)
+  }
+
+  return [run, cancel] as const
+}
