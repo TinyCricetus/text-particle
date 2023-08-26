@@ -34,50 +34,15 @@ The library contains two particle effects:
 - TextParticle
 - ImageParticle
 
-> If you want to render particles with high performance, enable the configuration option **enableWebGL**.
+> If you want to render particles with high performance, enable the option **'enableWebGL'**.
 
 
 You can get more details from the sample:
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TextParticle Demo</title>
-</head>
-
-<body>
-  <div id="container_1" class="container_1"></div>
-  <div id="container_2" class="container_1"></div>
-  <div id="container_3" class="container_1"></div>
-  <div id="container_4" class="container_1"></div>
-  <div class="display-box">
-    <div id="display" class="display"></div>
-    <div id="display2" class="display"></div>
-  </div>
-</body>
-
-</html>
-```
+**text particle effect:**
 
 ```typescript
-// code
-import './index.css'
-
-// To make this work, you need to 🧵run build in '../package.json' first
-import { ImageParticle, TextParticle } from '../dist/index'
-
-main()
-
-function main() {
-  runTextParticle()
-  runImageParticle()
-}
-
-function runTextParticle() {
+function renderTextParticle() {
   const text = ['Klee', 'Ganyu']
   const color = ['#e75945', '#80b0e1']
 
@@ -85,7 +50,6 @@ function runTextParticle() {
   if (!root) {
     return
   }
-  root.style.height = '200px'
 
   const particleEffect = new TextParticle(root, {
     source: text[0],
@@ -101,29 +65,21 @@ function runTextParticle() {
   })
 
   particleEffect.render()
-
-  let index = 1
-  const transform = () => {
-    setTimeout(() => {
-      particleEffect.transitionTo(
-        text[index % text.length],
-        6000,
-        { color: color[index % color.length] }
-      )
-      index++
-
-      transform()
-    }, 10000)
-  }
-
-  transform()
+  // tips: If you enable the option 'enableContinuousEasing'
+  // the transition time will not work.
+  particleEffect.transitionTo(
+    text[1],
+    6000,
+    { color: color[1] }
+  )
 }
+```
 
-function runImageParticle() {
-  const images = [
-    '/assets/86f28321e6eaa4ab070c1f6cc150d6432795811a.png@1256w_1048h_!web-article-pic.webp',
-    '/assets/22e21662b3d7e092cc1761edcb1f9c672670fd7c.png@1256w_1132h_!web-article-pic.webp'
-  ]
+**image particle effect:**
+
+```ts
+function renderImageParticle() {
+  const images = ['/image1.png', '/image2.png']
 
   const root = document.getElementById('container_2')
   if (!root) {
@@ -141,18 +97,9 @@ function runImageParticle() {
   })
 
   particleEffect.render()
-
-  let index = 1
-  const transform = () => {
-    setTimeout(() => {
-      particleEffect.transitionTo(images[index % images.length], 6000)
-      index++
-
-      transform()
-    }, 10000)
-  }
-
-  transform()
+  // tips: If you enable the option 'enableContinuousEasing'
+  // the transition time will not work.
+  particleEffect.transitionTo(images[1], 6000)
 }
 ```
 
