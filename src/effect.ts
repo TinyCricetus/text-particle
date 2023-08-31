@@ -61,7 +61,7 @@ const defaultConfig: ParticleConfig = {
 }
 
 function mergeConfig(source: ParticleConfig, config: Partial<ParticleConfig>) {
-  const template = structuredClone(source)
+  const template = JSON.parse(JSON.stringify(source))
 
   Object.assign(template, {
     enableWebGL: config.enableWebGL ?? source.enableWebGL,
