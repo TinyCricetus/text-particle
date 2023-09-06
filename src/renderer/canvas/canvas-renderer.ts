@@ -20,7 +20,8 @@ export class CanvasRenderer extends Renderer {
 
   resize() {}
 
-  render(particles: Particle[]) {
+  render(particles: Particle[], config: ParticleConfig) {
+    this.config = config
     this.ctx.clearRect(0, 0, this.root.width, this.root.height)
 
     if (this.config.color) {

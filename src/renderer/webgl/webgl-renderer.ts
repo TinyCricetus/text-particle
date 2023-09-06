@@ -1,6 +1,6 @@
 import { ParticleConfig } from "../../effect"
 import { Particle } from "../../particle"
-import { invariant } from "../../utils"
+import { invariant, transformHexStrToRGBA } from "../../utils"
 import { Renderer } from "../renderer"
 import { FRAGMENT_SHADER_SOURCE } from './shader-source/fragment.frag'
 import { VERTEX_SHADER_SOURCE } from './shader-source/vertex.vert'
@@ -110,20 +110,29 @@ export class WebGLRenderer extends Renderer {
     gl.viewport(0, 0, this.root.width, this.root.height)
   }
 
-  render(particles: Particle[]) {
+  render(particles: Particle[], config: ParticleConfig) {
+    this.config = config
     const { program, gl } = this
 
     const len = particles.length
     const _positions = new Array(len * 2)
     const _colors = new Array(len * 4)
 
+    let configColor: number[] = []
+    let useConfigColor = false
+    if (this.config.color) {
+      useConfigColor = true
+      configColor = transformHexStrToRGBA(this.config.color)
+    }
+
     let pIndex = 0, cIndex = 0
     particles.forEach((p) => {
       _positions[pIndex++] = p.x
       _positions[pIndex++] = p.y
 
-      for (let i = 0; i < p.c.length; i++) {
-        _colors[cIndex++] = p.c[i]
+      const c = useConfigColor ? configColor : p.c
+      for (let i = 0; i < c.length; i++) {
+        _colors[cIndex++] = c[i]
       }
     })
 

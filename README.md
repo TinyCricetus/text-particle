@@ -88,12 +88,17 @@ function renderImageParticle() {
 
   const particleEffect = new ImageParticle(root, {
     source: images[0],
+    // color: '#ffffff',
     autoFit: true,
-    particleGap: 1,
-    particleRadius: 1,
+    particleGap: 4,
+    particleRadius: 2,
     showMouseCircle: true,
     enableContinuousEasing: true,
-    enableWebGL: true
+    enableWebGL: true,
+    // it is important to filter color
+    pixelFilter: (r, g, b, a) => {
+      return (r + g + b) > 0 && a > 10
+    }
   })
 
   particleEffect.render()

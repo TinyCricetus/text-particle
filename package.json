@@ -1,6 +1,6 @@
 {
   "name": "text-particle",
-  "version": "1.3.8",
+  "version": "1.3.9",
   "description": "Particle effects for text.",
   "main": "./dist/main.js",
   "module": "./dist/index.js",

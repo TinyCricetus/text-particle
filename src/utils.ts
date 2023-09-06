@@ -51,3 +51,31 @@ export function useRAF(fn: () => void) {
 
   return [run, cancel] as const
 }
+
+export function transformHexStrToRGBA(color: string) {
+  if (!color.startsWith('#')) {
+    throw new Error('Error color style')
+  }
+
+  color = color.substring(1)
+
+  // ensure correct length
+  if (color.length === 3) {
+    const [r, g, b] = color
+    color = r + r + g + g + b + b
+  }
+
+  if (color.length !== 6) {
+    throw new Error('Error color style')
+  }
+
+  const rgb: number[] = []
+  for (let i = 0; i < 6; i += 2) {
+    rgb.push(Number.parseInt(color[i] + color[i + 1], 16))
+  }
+
+  // A default to 255
+  rgb.push(255)
+
+  return rgb
+}

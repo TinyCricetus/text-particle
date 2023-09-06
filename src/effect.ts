@@ -208,7 +208,7 @@ export abstract class ParticleEffect {
         this.particles.forEach(p => this.updateParticleEase(costTime, p))
       }
 
-      this.renderer.render(this.particles)
+      this.renderer.render(this.particles, this._config)
     })
 
     if (!this.isRendering) {

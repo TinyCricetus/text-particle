@@ -23,11 +23,11 @@ function runTextParticle() {
   const particleEffect = new TextParticle(root, {
     source: text[0],
     // Custom font need to set in css '@font-face' first 
-    font: 'bold 200px lai',
+    font: 'bold 100px lai',
     color: color[0],
     textAlign: 'center',
-    particleGap: 6,
-    particleRadius: 3,
+    particleGap: 4,
+    particleRadius: 2,
     showMouseCircle: true,
     enableContinuousEasing: true,
     enableWebGL: true
@@ -69,12 +69,17 @@ function runImageParticle() {
 
   const particleEffect = new ImageParticle(root, {
     source: images[0],
+    // color: '#ffffff',
     autoFit: true,
-    particleGap: 1,
-    particleRadius: 1,
+    particleGap: 4,
+    particleRadius: 2,
     showMouseCircle: true,
     enableContinuousEasing: true,
-    enableWebGL: true
+    enableWebGL: true,
+    // it is important to filter color
+    pixelFilter: (r, g, b, a) => {
+      return (r + g + b) > 0 && a > 10
+    }
   })
 
   particleEffect.render()

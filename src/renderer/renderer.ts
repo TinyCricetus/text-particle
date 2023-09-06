@@ -8,5 +8,5 @@ export abstract class Renderer {
   ) { }
 
   abstract resize(): void
-  abstract render(particles: Particle[]): void
+  abstract render(particles: Particle[], config: ParticleConfig): void
 }
