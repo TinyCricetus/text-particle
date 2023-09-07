@@ -72,6 +72,10 @@ function renderTextParticle() {
     6000,
     { color: color[1] }
   )
+
+  fromEvent(window, 'resize').pipe(debounceTime(100)).subscribe(() => {
+    particleEffect.resize()
+  })
 }
 ```
 
@@ -105,6 +109,10 @@ function renderImageParticle() {
   // tips: If you enable the option 'enableContinuousEasing'
   // the transition time will not work.
   particleEffect.transitionTo(images[1], 6000)
+
+  fromEvent(window, 'resize').pipe(debounceTime(100)).subscribe(() => {
+    particleEffect.resize()
+  })
 }
 ```
 

@@ -2,6 +2,7 @@ import './index.css'
 
 // To make this work, you need to 🧵run build in '../package.json' first
 import { ImageParticle, TextParticle } from '../dist/index'
+import { debounceTime, fromEvent } from 'rxjs'
 
 main()
 
@@ -50,6 +51,10 @@ function runTextParticle() {
   }
 
   transform()
+
+  fromEvent(window, 'resize').pipe(debounceTime(100)).subscribe(() => {
+    particleEffect.resize()
+  })
 }
 
 function runImageParticle() {
@@ -95,4 +100,8 @@ function runImageParticle() {
   }
 
   transform()
+
+  fromEvent(window, 'resize').pipe(debounceTime(100)).subscribe(() => {
+    particleEffect.resize()
+  })
 }

@@ -112,7 +112,10 @@ export abstract class ParticleEffect {
 
   protected _config: ParticleConfig
 
-  protected constructor(root: ParticleEffectRoot, config: Partial<ParticleConfig>) {
+  protected constructor(
+    public root: ParticleEffectRoot,
+    config: Partial<ParticleConfig>
+  ) {
     if (root instanceof HTMLCanvasElement) {
       this.canvas = root
     } else {
@@ -198,6 +201,17 @@ export abstract class ParticleEffect {
 
     // Be sure to record the time here, because the await expression takes time
     this.lastAnimationBeginTime = Date.now()
+  }
+
+  resize() {
+    if (!(this.root instanceof HTMLCanvasElement)) {
+      this.canvas.width = this.root.clientWidth
+      this.canvas.height = this.root.clientHeight
+    }
+
+    // render will auto call resize
+    // resize need to rebuild particle
+    this.cacheMap.clear()
   }
 
   async render(source?: string) {
