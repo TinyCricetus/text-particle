@@ -79,3 +79,20 @@ export function transformHexStrToRGBA(color: string) {
 
   return rgb
 }
+
+export function shallowEqual(obj1: any, obj2: any) {
+  const keys = Object.keys(obj1)
+  for(const key of keys) {
+    if (obj1[key] !== obj2[key]) {
+      return false
+    }
+  }
+
+  return true
+}
+
+export function shallowClone<T = any>(obj: T) {
+  return {
+    ...obj
+  }
+}

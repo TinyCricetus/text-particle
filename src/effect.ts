@@ -1,5 +1,5 @@
 import { FilterRGBA, Particle } from "./particle"
-import { distance, ease, useRAF } from "./utils"
+import { distance, ease, shallowClone, useRAF } from "./utils"
 import { Renderer } from "./renderer/renderer"
 import { WebGLRenderer } from "./renderer/webgl/webgl-renderer"
 import { CanvasRenderer } from "./renderer/canvas/canvas-renderer"
@@ -9,13 +9,6 @@ export interface ParticleConfig {
 
   offsetX: number
   offsetY: number
-
-  /**
-   * Control Particle Radius
-   * 
-   * Tip: Setting a color will improve particle performance
-   */
-  color?: string
 
   /**
    * Control Particle Radius
@@ -31,17 +24,38 @@ export interface ParticleConfig {
   * Move 1/n of remaining distance per frame.
   * 
   * Make 'enableContinuousEasing' true to take this option effect.
+  * 
+  * Default is 30.
   */
   moveProportionPerFrame: number
+
   /**
    * Make 'enableContinuousEasing' true to take this option effect
    */
   showMouseCircle: boolean
+
   enableContinuousEasing: boolean
 
   enableWebGL: boolean
 
+  /**
+   * Control Particle Radius
+   * 
+   * Tip: Setting a color will improve particle performance
+   */
+  color?: string
+
+  /**
+   * Default is false.
+   */
+  disableCache?: boolean
+
   pixelFilter?: FilterRGBA
+}
+
+export interface ParticleCache {
+  config: ParticleConfig
+  particles: Particle[]
 }
 
 export type ParticleEffectRoot = HTMLElement | HTMLCanvasElement
@@ -57,11 +71,12 @@ const defaultConfig: ParticleConfig = {
   showMouseCircle: true,
   moveProportionPerFrame: 30,
   offsetX: 0,
-  offsetY: 0
+  offsetY: 0,
+  disableCache: false
 }
 
 function mergeConfig(source: ParticleConfig, config: Partial<ParticleConfig>) {
-  const template = JSON.parse(JSON.stringify(source))
+  const template = shallowClone(source)
 
   Object.assign(template, {
     enableWebGL: config.enableWebGL ?? source.enableWebGL,
@@ -75,6 +90,7 @@ function mergeConfig(source: ParticleConfig, config: Partial<ParticleConfig>) {
     moveProportionPerFrame: config.moveProportionPerFrame ?? source.moveProportionPerFrame,
     offsetX: config.offsetX ?? source.offsetX,
     offsetY: config.offsetY ?? source.offsetY,
+    disableCache: config.disableCache ?? source.disableCache,
     pixelFilter: config.pixelFilter ?? source.pixelFilter
   })
 
@@ -85,6 +101,7 @@ export abstract class ParticleEffect {
   protected renderer: Renderer
   protected canvas: HTMLCanvasElement = document.createElement('canvas')
   protected isRendering = false
+  protected cacheMap = new Map<string, ParticleCache>()
   protected unBindMouseEventCallback: (() => void) | null = null
 
   protected lastAnimationBeginTime = 0
@@ -123,6 +140,7 @@ export abstract class ParticleEffect {
 
   destroy() {
     this.disableMouseListener()
+    this.cacheMap.clear()
   }
 
   /**

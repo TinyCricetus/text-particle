@@ -91,7 +91,7 @@ export class Particle {
   }
 
   clone() {
-    return Particle.create(this.x, this.y, this.r)
+    return Particle.create(this.x, this.y, this.r, this.c)
   }
 
   updateNext(x: number, y: number, r = this.r, c = this.c) {

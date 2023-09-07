@@ -1,3 +1,4 @@
+import { shallowClone, shallowEqual } from "../utils"
 import { ParticleConfig, ParticleEffect, ParticleEffectRoot } from "../effect"
 import { Particle } from "../particle"
 
@@ -24,6 +25,11 @@ export class ImageParticle extends ParticleEffect {
   }
 
   override async generateParticles(source: string) {
+    const old = this.cacheMap.get(source)
+    if (old && shallowEqual(old.config, this._config)) {
+      return old.particles
+    }
+
     const tempCanvas = document.createElement('canvas')
     const { width, height } = this.canvas
 
@@ -75,11 +81,20 @@ export class ImageParticle extends ParticleEffect {
     ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight)
     const tempImageData = ctx.getImageData(0, 0, width, height)
 
-    return Particle.from(
+    const newParticles = Particle.from(
       tempImageData,
       config.particleGap,
       config.particleRadius,
       config.pixelFilter
     )
+
+    if (!this._config.disableCache) {
+      this.cacheMap.set(source, {
+        config: shallowClone(config),
+        particles: newParticles.map(p => p.clone())
+      })
+    }
+
+    return newParticles
   }
 }
