@@ -37,6 +37,7 @@ export class ImageParticle extends ParticleEffect {
     tempCanvas.height = height
 
     const image = new Image()
+    image.crossOrigin = 'anonymous'
     const loadPromise = new Promise((resolve, reject) => {
       image.onload = (ev) => {
         resolve(ev)
