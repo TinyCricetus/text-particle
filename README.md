@@ -36,6 +36,7 @@ The library contains two particle effects:
 
 > If you want to render particles with high performance, enable the option **'enableWebGL'**.
 
+If you want to run yourself, see [Example](https://github.com/TinyCricetus/text-particle/tree/main/example)
 
 You can get more details from the sample:
 

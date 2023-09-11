@@ -9,6 +9,7 @@ export interface ImageParticleConfig extends ParticleConfig {
 
 export class ImageParticle extends ParticleEffect {
   private autoFit = false
+  private imageCache = new Map<string, HTMLImageElement>()
 
   constructor(root: ParticleEffectRoot, config: Partial<ImageParticleConfig>) {
     super(root, config)
@@ -36,19 +37,25 @@ export class ImageParticle extends ParticleEffect {
     tempCanvas.width = width
     tempCanvas.height = height
 
-    const image = new Image()
-    image.crossOrigin = 'anonymous'
-    const loadPromise = new Promise((resolve, reject) => {
-      image.onload = (ev) => {
-        resolve(ev)
-      }
-      image.onerror = (err) => {
-        reject(err)
-      }
-    })
+    let image: HTMLImageElement
+    const oldImage = this.imageCache.get(source)
+    if (oldImage) {
+      image = oldImage
+    } else {
+      image = new Image()
+      image.crossOrigin = 'anonymous'
+      const loadPromise = new Promise((resolve, reject) => {
+        image.onload = (ev) => {
+          resolve(ev)
+        }
+        image.onerror = (err) => {
+          reject(err)
+        }
+      })
 
-    image.src = source
-    await loadPromise
+      image.src = source
+      await loadPromise
+    }
 
     // Need to grayscale, but not yet
 
@@ -94,6 +101,8 @@ export class ImageParticle extends ParticleEffect {
         config: shallowClone(config),
         particles: newParticles.map(p => p.clone())
       })
+
+      this.imageCache.set(source, image)
     }
 
     return newParticles
