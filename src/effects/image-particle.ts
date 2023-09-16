@@ -68,21 +68,18 @@ export class ImageParticle extends ParticleEffect {
     let offsetY = config.offsetY
 
     if (this.autoFit) {
-      let scale = 1
-      if (height < width) {
-        scale = height / imageHeight
-      } else {
-        scale = width / imageWidth
-      }
+      const scaleW = width / imageHeight
+      const scaleH = height / imageHeight
+      const scale = Math.min(scaleW, scaleH)
 
-      const scaleWidth = Math.floor(imageWidth * scale)
-      const scaleHeight = Math.floor(imageHeight * scale)
+      const scaledWidth = Math.floor(imageWidth * scale)
+      const scaledHeight = Math.floor(imageHeight * scale)
 
-      offsetX = Math.floor(Math.abs(width - scaleWidth) / 2)
-      offsetY = Math.floor(Math.abs(height - scaleHeight) / 2)
+      offsetX = Math.floor(Math.abs(width - scaledWidth) / 2)
+      offsetY = Math.floor(Math.abs(height - scaledHeight) / 2)
 
-      drawWidth = scaleWidth
-      drawHeight = scaleHeight
+      drawWidth = scaledWidth
+      drawHeight = scaledHeight
     }
 
     const ctx = tempCanvas.getContext('2d')!
