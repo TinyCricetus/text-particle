@@ -68,7 +68,7 @@ export class ImageParticle extends ParticleEffect {
     let offsetY = config.offsetY
 
     if (this.autoFit) {
-      const scaleW = width / imageHeight
+      const scaleW = width / imageWidth
       const scaleH = height / imageHeight
       const scale = Math.min(scaleW, scaleH)
 
